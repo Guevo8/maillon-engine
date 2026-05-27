@@ -1,0 +1,30 @@
+{
+  "ressourcen": {
+    "Holz": 2,
+    "Stein": 1,
+    "Korn": 1
+  },
+  "felder": [
+    {
+      "typ": "Dorf",
+      "spezial": false,
+      "aktiv_ab_runde": 1
+    },
+    {
+      "typ": "Holz",
+      "spezial": false,
+      "aktiv_ab_runde": 1
+    },
+    {
+      "typ": "Stein",
+      "spezial": false,
+      "aktiv_ab_runde": 1
+    },
+    {
+      "typ": "Korn",
+      "spezial": false,
+      "aktiv_ab_runde": 1
+    }
+  ],
+  "runde": 1
+}

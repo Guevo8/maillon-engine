@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Runtime data
+data/savegame.json
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
