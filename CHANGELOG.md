@@ -1,4 +1,4 @@
-# CHANGELOG
+# Changelog
 
 ## v0.2 — Neighbor Conflict Loop
 
@@ -16,13 +16,15 @@ Maillon Pocket v0.2 erweitert den spielbaren v0.1-Kern um den ersten echten Gege
 - Feldübernahme bei deutlichem Konfliktsieg
 - Bauen mit 2x W3 und Spielerwahl
 - v0.2-Save-Struktur mit Spieler und Nachbar
+- Regeldatei `docs/rules_v0_2.md`
 
 ### Changed
 
 - Upgrade ist nur noch auf aktive Nicht-Dorf-Felder möglich
 - Statusanzeige während der Aktionsphase zeigt Spieler und Nachbar
-- Savegame wird am normalen Rundenende nach Erhöhung des Rundenizählers gespeichert
+- Savegame wird am normalen Rundenende nach Erhöhung des Rundenzählers gespeichert
 - alte v0.1-Saves erzeugen beim Laden automatisch einen frischen Nachbar
+- Mondrunde ist nicht mehr nur ein Marker, sondern ein echter Konflikt
 
 ### Not included
 
