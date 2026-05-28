@@ -7,8 +7,8 @@ Maillon Pocket v0.3 ersetzt die 8-Feld-Liste durch ein räumliches Hex-Board.
 ### Ziel
 
 - Hex-Nachbarschaft als räumliches Grundgesetz
-- 37 Felder als Testboard (Radius 4)
-- 61 Felder als Zieltest (Radius 5)
+- 37 Felder als Testboard (Seitenlänge 4 / axialer Radius 3)
+- 61 Felder als Zieltest (Seitenlänge 5 / axialer Radius 4)
 - Dorf/Core + Start-Holz statt Dorf + alle drei Ressourcentypen
 - räumliches Bauen: Feld muss an eigenes Feld angrenzen
 - Kampfwürfel-Formel neu kalibrieren (Frontfelder oder √n)
