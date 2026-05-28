@@ -106,13 +106,13 @@ In v0.3 wird **Raum** von **Funktion** getrennt:
 > als **Seitenlänge** des regulären Hexagons verwendet, nicht als axialer Radius
 > im Cube-Koordinatensystem. Die Formel lautet:
 
-```
+```text
 Felder(s) = 3 · s · (s − 1) + 1
 ```
 
 Im Axial-/Cube-Koordinatensystem gilt stattdessen:
 
-```
+```text
 Felder(r) = 3 · r² + 3 · r + 1   (r = axialer Radius)
 ```
 
@@ -146,29 +146,29 @@ Skripte, die axialen Radius verwenden, müssen r = s − 1 rechnen.
 
 **37er Board (Seitenlänge 4):**
 
-| Eigenschaft               | Wert (vorläufig)                 |
-|---------------------------|----------------------------------|
-| Gesamtfelder              | 37                               |
-| Randfelder (äußerste Reihe) | 18                             |
-| Innenfelder               | 19                               |
-| Ø Nachbarn (Innen)        | 6,0                              |
-| Ø Nachbarn (Rand)         | ~3,8                             |
-| Startdistanz (gegenüber)  | **ca. 6 — per Skript zu prüfen** |
-| Rush-Erstkontakt (min)    | **ca. Runde 3 — per Skript zu prüfen** |
-| Felder ≤3 Schritte Start  | per Skript zu berechnen          |
+| Eigenschaft                 | Wert (vorläufig)                 |
+|-----------------------------|----------------------------------|
+| Gesamtfelder                | 37                               |
+| Randfelder (äußerster Ring) | 18                               |
+| Innenfelder                 | 19                               |
+| Ø Nachbarn (Innen)          | 6,0                              |
+| Ø Nachbarn (Rand)           | ~3,8                             |
+| Startdistanz (gegenüber)    | **ca. 6 — per Skript zu prüfen** |
+| Rush-Erstkontakt (min)      | **ca. Runde 3 — per Skript zu prüfen** |
+| Felder ≤3 Schritte Start    | per Skript zu berechnen          |
 
 **61er Board (Seitenlänge 5):**
 
-| Eigenschaft               | Wert (vorläufig)                 |
-|---------------------------|----------------------------------|
-| Gesamtfelder              | 61                               |
-| Randfelder                | 20                               |
-| Innenfelder               | 41                               |
-| Ø Nachbarn (Innen)        | 6,0                              |
-| Ø Nachbarn (Rand)         | ~3,8                             |
-| Startdistanz (gegenüber)  | **ca. 8 — per Skript zu prüfen** |
-| Rush-Erstkontakt (min)    | **ca. Runde 4 — per Skript zu prüfen** |
-| Felder ≤3 Schritte Start  | per Skript zu berechnen          |
+| Eigenschaft                 | Wert (vorläufig)                 |
+|-----------------------------|----------------------------------|
+| Gesamtfelder                | 61                               |
+| Randfelder (äußerster Ring) | 24                               |
+| Innenfelder                 | 37                               |
+| Ø Nachbarn (Innen)          | 6,0                              |
+| Ø Nachbarn (Rand)           | ~3,8                             |
+| Startdistanz (gegenüber)    | **ca. 8 — per Skript zu prüfen** |
+| Rush-Erstkontakt (min)      | **ca. Runde 4 — per Skript zu prüfen** |
+| Felder ≤3 Schritte Start    | per Skript zu berechnen          |
 
 ### 4.3 Interpretation
 
@@ -196,8 +196,8 @@ Warum:
 **Baugeschwindigkeit ab Start (deterministisches Modell — 1 Res/Feld/Runde):**
 
 > Dieses Modell nimmt an, dass jedes Feld jede Runde sicher 1 Ressource produziert.
-> Das entspricht **nicht** der v0.2-Würfelregel (W6, Ertrag nur bei bestimmten
-> Ergebnissen). Es ist ein deterministisches Referenzmodell für Worst-/Best-Case.
+> Das entspricht **nicht** der v0.2-Würfelregel (W6, Ertrag nur bei einer 6).
+> Es ist ein deterministisches Referenzmodell für Worst-/Best-Case.
 
 | Runde | Holz | Korn | Aktion        |
 |-------|------|------|---------------|
@@ -215,10 +215,10 @@ Ab Runde 2 kann im deterministischen Modell gebaut werden.
 >
 > Die v0.2-Regel ist anders: Felder produzieren auf W6-Wurf, nicht sicher.
 > Nach v0.2-Regelwerk produziert 1 normales Feld im Erwartungswert **1/6
-> Ressource pro Runde** (nur bei einer 6: +1 extra; ansonsten je nach Leserart
-> der Regeln). Die exakte Produktionsregel für v0.3 ist noch offen.
+> Ressource pro Runde** (bei einer 6: +1, sonst 0). Die exakte Produktionsregel
+> für v0.3 ist noch offen.
 >
-> Die folgenden Argumente sind deshalb als **Hypothesen für das deterministisches
+> Die folgenden Argumente sind deshalb als **Hypothesen für das deterministische
 > Modell** zu verstehen, nicht als bewiesene Aussagen über v0.2 oder v0.3.
 
 **Hypothese:** Bei deterministischer Produktion (1 Res/Feld/Runde) ist die
@@ -239,7 +239,7 @@ müssen per Simulation berechnet werden.
 
 ### Testkandidat A — Hartes Cap
 
-```
+```text
 max(Ressource) = 8  oder  max = 10
 ```
 
@@ -248,7 +248,7 @@ max(Ressource) = 8  oder  max = 10
 
 ### Testkandidat B — Diminishing Returns
 
-```
+```text
 Ertrag_effektiv = n · (1 / (1 + n/k))   [k = 6 als Startwert]
 ```
 
@@ -259,11 +259,12 @@ Ertrag_effektiv = n · (1 / (1 + n/k))   [k = 6 als Startwert]
 | 12     | 4,0                    |
 | 20     | 4,6                    |
 
-Produktion wächst, aber gegen eine asymptotische Grenze (~k/2 bei großem n).
+Produktion wächst, nähert sich aber einer asymptotischen Grenze von k.
+Bei k = 6 liegt die Obergrenze also bei ca. 6.
 
 ### Testkandidat C — Upkeep (Korn-Unterhalt)
 
-```
+```text
 Upkeep = floor(Felder / 3) Korn pro Runde
 ```
 
@@ -276,8 +277,7 @@ Upkeep = floor(Felder / 3) Korn pro Runde
 
 Korn wird Limitressource. Thematisch kohärent mit Dorf/Core als Versorgungsanker.
 
-**Welcher Testkandidat zuerst getestet wird, entscheidet der Designprozess nach
-dem Board-Analyse-Skript — nicht dieses Dokument.**
+**Welcher Testkandidat zuerst getestet wird, entscheidet sich nach dem Board-Analyse-Skript — nicht dieses Dokument.**
 
 ---
 
@@ -302,7 +302,7 @@ Frontfelder = Felder, die an ein neutrales oder gegnerisches Feld grenzen.
 
 **Testkandidat 2: √n Würfel**
 
-```
+```text
 Würfel = sqrt(Felder)   →   E[Summe] = 3,5 · sqrt(n)
 ```
 
@@ -379,23 +379,22 @@ Ein Analyse-Skript erstellen (`analysis/hex_board_analysis.py`), das:
 6. Breitenoptionen (verfügbare Bauoptionen pro Runde) zählt
 7. Erste Kontaktpunkte zwischen den Fronten bestimmt
 
-Die Werte in diesem Dokument (Startdistanz, Rush-Runde, Feldabdeckung) werden
-dann durch Skript-Ausgaben ersetzt oder bestätigt.
+Erst danach: Ressourcen, Kampf, Feldübernahme, Upgrades und Siegbedingungen
+neu kalibrieren.
 
 ---
 
 ## 11. Zusammenfassung des Schnitts
 
-| Aspekt             | v0.2                          | v0.3                                  |
-|--------------------|-------------------------------|---------------------------------------|
-| Board              | 8-Feld-Liste                  | Hex-Grid (SL 4 Test / SL 5 Ziel)      |
-| Start              | Dorf + Holz + Stein + Korn    | Dorf/Core + Holzfeld                  |
-| Baulogik           | Feld an Liste anhängen        | räumlich: grenzt an eigenes Feld      |
-| Kampfwürfel        | alle eigenen Felder           | **Testkandidat: Frontfelder / √n**    |
-| Ressourcenlimit    | Überfluss >5 → -1             | **Testkandidat: Cap / DR / Upkeep**   |
-| Snowball           | stark (Näherung bestätigt)    | strukturell zu adressieren            |
-| Status             | Conflict Prototype ✓          | Board Baseline (nächster Schritt)     |
+| Aspekt             | v0.2                          | v0.3                            |
+|--------------------|-------------------------------|---------------------------------|
+| Board              | 8-Feld-Liste                  | Hex-Grid (37 Test / 61 Ziel)    |
+| Start              | Dorf + Holz + Stein + Korn    | Dorf/Core + Holzfeld            |
+| Baulogik           | Feld an Liste anhängen        | räumlich: grenzt an eigenes Feld|
+| Kampfwürfel        | alle eigenen Felder           | offen: alle / Front / √n / v0.2 angepasst |
+| Ressourcenlimit    | Überfluss >5 → -1             | offen: Hard Cap / DR / Upkeep   |
+| Snowball           | stark durch Feld-Multifunktion| soll strukturell geprüft werden |
+| Status             | Conflict Prototype ✓          | Board Baseline (nächster Schritt)|
 
 v0.2 beweist die Konfliktmechanik.  
-v0.3 baut den Raum, in dem diese Mechanik sinnvoll werden kann.  
-Dieses Dokument formuliert Hypothesen — keine Entscheidungen.
+v0.3 baut den Raum, in dem diese Mechanik sinnvoll wird.
