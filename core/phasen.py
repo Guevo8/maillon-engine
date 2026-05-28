@@ -1,72 +1,49 @@
-from core.aktionen import bauen, upgrade, aussetzen
+from core.aktionen import bauen, upgrade, aussetzen, aktionen_phase
+from core import konflikt
 
 
-def ertrag(spieler):
-    print("\n=== Phase 1: Ertrag ===")
-    gesamt_ertrag = {
-        "Holz": 0,
-        "Stein": 0,
-        "Korn": 0,
-    }
+def ertrag(akteur):
+    label = "Nachbar" if akteur.__class__.__name__ == "Nachbar" else "Spieler"
+    print(f"\n=== Ertrag ({label}) ===")
+    gesamt_ertrag = {"Holz": 0, "Stein": 0, "Korn": 0}
 
-    for feld in spieler.felder:
-        ergebnis = feld.wuerfle_ertrag(spieler.runde)
+    for feld in akteur.felder:
+        ergebnis = feld.wuerfle_ertrag(akteur.runde)
         if ergebnis is None:
             continue
 
         rohstoff, menge = ergebnis
-        spieler.ressourcen[rohstoff] += menge
+        akteur.ressourcen[rohstoff] += menge
         gesamt_ertrag[rohstoff] += menge
-        print(f"✅ {feld.typ}-Feld erzeugt +{menge} {rohstoff}.")
+        print(f"  \u2705 {feld.typ}-Feld erzeugt +{menge} {rohstoff}.")
 
     if all(menge == 0 for menge in gesamt_ertrag.values()):
-        print("Kein Ertrag in dieser Runde.")
+        print("  Kein Ertrag in dieser Runde.")
 
     return gesamt_ertrag
 
 
-def aktionen_phase(spieler):
-    print("\n=== Phase 2: Aktionen ===")
-    verbleibende_aktionen = 2
-
-    while verbleibende_aktionen > 0:
-        print(f"\nVerbleibende Aktionen: {verbleibende_aktionen}")
-        print("[1] Bauen")
-        print("[2] Upgrade")
-        print("[3] Aussetzen (verbraucht beide Aktionen)")
-        print("[4] Status anzeigen")
-        wahl = input("Wähle eine Aktion: ")
-
-        if wahl == "1":
-            if bauen(spieler):
-                verbleibende_aktionen -= 1
-        elif wahl == "2":
-            if upgrade(spieler):
-                verbleibende_aktionen -= 1
-        elif wahl == "3":
-            aussetzen(spieler)
-            verbleibende_aktionen = 0
-        elif wahl == "4":
-            spieler.status()
-        else:
-            print("❌ Ungültige Eingabe.")
-
-
-def ueberfluss_check(spieler):
-    print("\n=== Phase 3: Überfluss-Check ===")
+def ueberfluss_check(akteur):
+    label = "Nachbar" if akteur.__class__.__name__ == "Nachbar" else "Spieler"
+    print(f"\n=== \u00dcberfluss-Check ({label}) ===")
     hatte_ueberfluss = False
 
-    for rohstoff, bestand in list(spieler.ressourcen.items()):
+    for rohstoff, bestand in list(akteur.ressourcen.items()):
         if bestand > 5:
             neuer_bestand = max(5, bestand - 1)
-            spieler.ressourcen[rohstoff] = neuer_bestand
+            akteur.ressourcen[rohstoff] = neuer_bestand
             hatte_ueberfluss = True
-            print(f"⚠️ {rohstoff}: {bestand} > 5. Überfluss verfällt auf {neuer_bestand}.")
+            print(f"  \u26a0\ufe0f {rohstoff}: {bestand} > 5. \u00dcberfluss verf\u00e4llt auf {neuer_bestand}.")
 
     if not hatte_ueberfluss:
-        print("Kein Überfluss.")
+        print("  Kein \u00dcberfluss.")
 
 
-def mondrunde_marker(runde):
+def omen_marker(runde):
+    if runde % 4 == 3:
+        print("\n\U0001f318 Omen: Die Mondrunde naht. Bereite dich vor.")
+
+
+def mondrunde(spieler, nachbar, runde):
     if runde % 4 == 0:
-        print("\n🌙 Mondrunde — Solo v0.1: kein Konflikt. Ab v0.2 wird hier ein Nachbar simuliert.")
+        konflikt.mondrunde_konflikt(spieler, nachbar)
