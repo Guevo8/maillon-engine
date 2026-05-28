@@ -1,8 +1,44 @@
 # Changelog
 
+## v0.3 — Board Baseline (geplant)
+
+Maillon Pocket v0.3 ersetzt die 8-Feld-Liste durch ein räumliches Hex-Board.
+
+### Ziel
+
+- Hex-Nachbarschaft als räumliches Grundgesetz
+- 37 Felder als Testboard (Radius 4)
+- 61 Felder als Zieltest (Radius 5)
+- Dorf/Core + Start-Holz statt Dorf + alle drei Ressourcentypen
+- räumliches Bauen: Feld muss an eigenes Feld angrenzen
+- Kampfwürfel-Formel neu kalibrieren (Frontfelder oder √n)
+- Ressourcenlimit neu: Upkeep oder Hard Cap
+
+### Nicht in v0.3
+
+- Mehrspieler (3+)
+- Named Combos
+- Wonder
+- Heilige Felder
+- Fokus-Token
+- Backend/KI
+- GUI
+
+### Nächster technischer Schritt
+
+Analyse-Skript: Hex-Board erzeugen, Nachbarschaften berechnen,
+Startpositionen setzen, Bauoptionen und Rush-Distanzen ermitteln.
+
+Siehe `docs/transition_v0_2_to_v0_3_scope.md` für vollständige Analyse.
+
+---
+
 ## v0.2 — Neighbor Conflict Loop
 
 Maillon Pocket v0.2 erweitert den spielbaren v0.1-Kern um den ersten echten Gegenspieler.
+
+> Status: Conflict Prototype — technisch lauffähig, nicht mehr das Zielregelwerk.
+> Übergang dokumentiert in `docs/transition_v0_2_to_v0_3_scope.md`.
 
 ### Added
 
