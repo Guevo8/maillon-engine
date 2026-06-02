@@ -273,54 +273,81 @@ def core_upgrade_action_from_input(state: GameState, actor: ActorId) -> Action |
     )
 
 
+
+def player_available_counts(state: GameState) -> dict[str, int]:
+    return {
+        "build": len(affordable_build_targets(state, "player")),
+        "raid": len(affordable_raid_targets(state, "player")),
+        "rebuild": len(affordable_rebuild_targets(state, "player")),
+        "field_upgrade": len(affordable_field_upgrade_targets(state, "player")),
+        "core_upgrade": len(affordable_core_upgrade_targets(state, "player")),
+    }
+
+
+def print_player_action_header(engine: GameEngine, action_number: int) -> dict[str, int]:
+    state = engine.state
+    player = state.actor_state("player")
+    counts = player_available_counts(state)
+
+    print()
+    print(f"Spieleraktion {action_number}/{engine.config.actions_per_turn}")
+    print(
+        "Ressourcen: "
+        f"Holz {player.resources['Holz']}/{player.caps['Holz']} | "
+        f"Stein {player.resources['Stein']}/{player.caps['Stein']} | "
+        f"Korn {player.resources['Korn']}/{player.caps['Korn']}"
+    )
+    print(
+        "Möglich: "
+        f"Build {counts['build']} | "
+        f"Raid {counts['raid']} | "
+        f"Rebuild {counts['rebuild']} | "
+        f"Upgrade {counts['field_upgrade']} | "
+        f"Core {counts['core_upgrade']}"
+    )
+
+    return counts
+
+
 def choose_player_action(engine: GameEngine, action_number: int) -> object:
     state = engine.state
 
     while True:
-        print()
-        print(f"Spieleraktion {action_number}/{engine.config.actions_per_turn}")
-        print("[1] Build")
-        print("[2] Raid")
-        print("[3] Rebuild")
-        print("[4] Field Upgrade")
-        print("[5] Core Upgrade")
+        counts = print_player_action_header(engine, action_number)
+
+        menu: list[tuple[str, str]] = []
+
+        if counts["build"] > 0:
+            menu.append(("build", f"Build ({counts['build']})"))
+
+        if counts["raid"] > 0:
+            menu.append(("raid", f"Raid ({counts['raid']})"))
+
+        if counts["rebuild"] > 0:
+            menu.append(("rebuild", f"Rebuild ({counts['rebuild']})"))
+
+        if counts["field_upgrade"] > 0:
+            menu.append(("field_upgrade", f"Field Upgrade ({counts['field_upgrade']})"))
+
+        if counts["core_upgrade"] > 0:
+            menu.append(("core_upgrade", f"Core Upgrade ({counts['core_upgrade']})"))
+
+        for index, (_key, label) in enumerate(menu, start=1):
+            print(f"[{index}] {label}")
+
         print("[6] Status")
         print("[7] Eigene Felder")
         print("[8] Aktionsübersicht")
         print("[9] Zug beenden")
         print("[0] Partie abbrechen")
 
+        if not menu:
+            print("Keine ausführbare Aktion verfügbar. Du kannst Status prüfen oder den Zug beenden.")
+
         choice = input_int("> ")
 
-        if choice == 1:
-            action = build_action_from_input(state, "player")
-            if action is None:
-                continue
-            return action
-
-        if choice == 2:
-            action = raid_action_from_input(state, "player")
-            if action is None:
-                continue
-            return action
-
-        if choice == 3:
-            action = rebuild_action_from_input(state, "player")
-            if action is None:
-                continue
-            return action
-
-        if choice == 4:
-            action = field_upgrade_action_from_input(state, "player")
-            if action is None:
-                continue
-            return action
-
-        if choice == 5:
-            action = core_upgrade_action_from_input(state, "player")
-            if action is None:
-                continue
-            return action
+        if choice == 0:
+            return QUIT_GAME
 
         if choice == 6:
             print_status(engine)
@@ -337,8 +364,38 @@ def choose_player_action(engine: GameEngine, action_number: int) -> object:
         if choice == 9:
             return END_TURN
 
-        if choice == 0:
-            return QUIT_GAME
+        if 1 <= choice <= len(menu):
+            key = menu[choice - 1][0]
+
+            if key == "build":
+                action = build_action_from_input(state, "player")
+                if action is None:
+                    continue
+                return action
+
+            if key == "raid":
+                action = raid_action_from_input(state, "player")
+                if action is None:
+                    continue
+                return action
+
+            if key == "rebuild":
+                action = rebuild_action_from_input(state, "player")
+                if action is None:
+                    continue
+                return action
+
+            if key == "field_upgrade":
+                action = field_upgrade_action_from_input(state, "player")
+                if action is None:
+                    continue
+                return action
+
+            if key == "core_upgrade":
+                action = core_upgrade_action_from_input(state, "player")
+                if action is None:
+                    continue
+                return action
 
         print("Ungültige Auswahl.")
 
