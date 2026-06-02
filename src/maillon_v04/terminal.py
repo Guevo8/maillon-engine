@@ -15,6 +15,7 @@ from src.maillon_v04.actions import (
 from src.maillon_v04.bot import BotPolicy
 from src.maillon_v04.board import Coord
 from src.maillon_v04.engine import GameConfig, GameEngine
+from src.maillon_v04.render import render_board_with_legend
 from src.maillon_v04.rules import (
     build_cost_holz,
     core_upgrade_cost_stein,
@@ -152,6 +153,12 @@ def print_front_targets(state: GameState, actor: ActorId = "player") -> None:
     print(f"Rebuild-Ziele:       {len(affordable_rebuild_targets(state, actor))}")
     print(f"Field-Upgrade-Ziele: {len(affordable_field_upgrade_targets(state, actor))}")
     print(f"Core-Upgrade-Ziele:  {len(affordable_core_upgrade_targets(state, actor))}")
+
+
+def print_board_map(engine: GameEngine) -> None:
+    print()
+    print(render_board_with_legend(engine.state))
+    print()
 
 
 def build_action_from_input(state: GameState, actor: ActorId) -> Action | None:
@@ -338,6 +345,7 @@ def choose_player_action(engine: GameEngine, action_number: int) -> object:
         print("[6] Status")
         print("[7] Eigene Felder")
         print("[8] Aktionsübersicht")
+        print("[10] Karte anzeigen")
         print("[9] Zug beenden")
         print("[0] Partie abbrechen")
 
@@ -359,6 +367,10 @@ def choose_player_action(engine: GameEngine, action_number: int) -> object:
 
         if choice == 8:
             print_front_targets(state, "player")
+            continue
+
+        if choice == 10:
+            print_board_map(engine)
             continue
 
         if choice == 9:
