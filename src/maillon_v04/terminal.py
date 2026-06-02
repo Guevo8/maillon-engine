@@ -16,6 +16,7 @@ from src.maillon_v04.bot import BotPolicy
 from src.maillon_v04.board import Coord
 from src.maillon_v04.engine import GameConfig, GameEngine
 from src.maillon_v04.render import render_board_with_legend
+from src.maillon_v04.run_logging import RunLogger
 from src.maillon_v04.rules import (
     build_cost_holz,
     core_upgrade_cost_stein,
@@ -442,7 +443,7 @@ def choose_bot_policy() -> BotPolicy:
     return "phase_player"
 
 
-def run_player_phase(engine: GameEngine) -> bool:
+def run_player_phase(engine: GameEngine, logger: RunLogger | None = None) -> bool:
     """
     Rückgabe:
         True, wenn weitergespielt werden soll.
@@ -472,6 +473,9 @@ def run_player_phase(engine: GameEngine) -> bool:
         result = apply_action(engine.state, action)
         engine.add_log("player", result.message)
 
+        if logger is not None:
+            logger.append_action_result(engine, result)
+
         print()
         print(result.message)
 
@@ -488,7 +492,7 @@ def run_player_phase(engine: GameEngine) -> bool:
     return True
 
 
-def run_enemy_phase(engine: GameEngine) -> bool:
+def run_enemy_phase(engine: GameEngine, logger: RunLogger | None = None) -> bool:
     if engine.current_winner() is not None:
         return False
 
@@ -500,6 +504,9 @@ def run_enemy_phase(engine: GameEngine) -> bool:
 
     for action_result in result.actions:
         print(action_result.message)
+
+        if logger is not None:
+            logger.append_action_result(engine, action_result)
 
     if result.stopped_by_winner:
         winner = engine.current_winner()
@@ -524,8 +531,12 @@ def run_game() -> None:
         )
     )
 
+    logger = RunLogger.create(engine)
+
     print()
     print("Neues Spiel gestartet.")
+    print(f"Run-Log: {logger.latest_run_path}")
+    print(f"Latest State: {logger.latest_state_path}")
     print_status(engine)
 
     while not engine.is_game_over():
@@ -535,6 +546,7 @@ def run_game() -> None:
         print("=" * 72)
 
         waste = engine.start_round()
+        logger.append_production(engine, waste)
 
         print()
         print("Produktion abgeschlossen.")
@@ -543,20 +555,27 @@ def run_game() -> None:
 
         print_status(engine)
 
-        keep_playing = run_player_phase(engine)
+        keep_playing = run_player_phase(engine, logger)
 
         if not keep_playing:
             break
 
-        keep_playing = run_enemy_phase(engine)
+        keep_playing = run_enemy_phase(engine, logger)
 
         if not keep_playing:
             break
 
         if engine.current_winner() is None:
             engine.advance_round()
+            logger.write_latest_state(engine)
 
     winner = engine.current_winner()
+
+    logger.write_summary(
+        engine,
+        reason="winner" if winner is not None else "stopped_without_winner",
+    )
+    logger.write_latest_state(engine)
 
     print()
     print("=" * 72)

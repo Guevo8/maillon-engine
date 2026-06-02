@@ -11,3 +11,6 @@ data/savegame.json
 .vscode/
 .idea/
 .DS_Store
+# Local playtest runs / runtime exports
+runs/
+
