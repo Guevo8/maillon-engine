@@ -1,5 +1,56 @@
 # Changelog
 
+## v0.4 — Prototype Core Analysis
+
+Maillon v0.4 konkretisiert die v0.3-Board-Hypothese durch deterministische Analyse-Simulationen.
+
+> Status: analysierter Prototypkern — noch nicht die spielbare Runtime.
+> Regelkern dokumentiert in `docs/maillon_v0_4_rules.md`.
+> Analysebefunde dokumentiert in `docs/analysis_findings_v0_4.md`.
+
+### Added
+
+- Analyseordner mit Einordnung: `analysis/README.md`
+- Hauptsimulation: `analysis/takeover_analysis.py`
+- v0.4-Hauptreport: `analysis/reports/takeover_report_3actions_v0_4.json`
+- Hotspot-Report: `analysis/reports/hotspots_61_cap_aware_vs_rusher_v0_4.csv`
+- v0.4-Regeldokumentation: `docs/maillon_v0_4_rules.md`
+- v0.4-Analysebefunde: `docs/analysis_findings_v0_4.md`
+- v0.4-Designnotizen: `docs/design_notes_v0_4.md`
+- kompakter Entwicklungslog: `docs/dev_log_short.md`
+
+### Analyzed
+
+- 37er- und 61er-Hexboards
+- Direct Takeover als Feldübernahme-Kern
+- Raid-Kosten nach Support
+- Ressourcen-Caps für Holz, Stein und Korn
+- Rebuild/Umbau als Holz-Sink
+- tiered cost scaling für Build und Field Upgrade
+- Feld-Instabilität nach Raid
+- 2 Aktionen vs. 3 Aktionen pro Zug
+- Action-Log für Einzelaktionen
+- Hotspot-Analyse chronisch umkämpfter Felder
+
+### Current interpretation
+
+- v0.1/v0.2 bleiben historische Runtime.
+- v0.3 bleibt Board-Baseline-Hypothese.
+- v0.4 ist der aktuell analysierte Prototypkern für die nächste Terminal-Version.
+
+### Not included
+
+- neue spielbare v0.4-Terminal-Runtime
+- GUI
+- Godot-/Engine-Integration
+- Editor
+- Utility-Scoring-Bot
+- Core Level 3
+- Repair/Stabilisieren
+- Raid +1 Holz
+
+---
+
 ## v0.3 — Board Baseline (geplant)
 
 Maillon Pocket v0.3 ersetzt die 8-Feld-Liste durch ein räumliches Hex-Board.
