@@ -91,26 +91,29 @@ PERSONALITY_WEIGHTS: dict[BotPersonality, dict[GamePhase, PersonalityWeights]] =
         ),
     },
     "economist": {
+        # 6E.2 tuned1: Economist soll Wirtschaft nicht als Selbstzweck spielen.
+        # Economy bleibt die stärkste Identität, wird aber von Rebuild-Schleifen
+        # weg in Expansion, Upgrade-Konversion und spätes Finish übersetzt.
         "early": PersonalityWeights(
-            expansion=1.25,
-            economy=1.70,
-            defense=0.80,
-            aggression=0.65,
-            development=1.55,
+            expansion=1.30,
+            economy=1.45,
+            defense=0.70,
+            aggression=0.75,
+            development=1.35,
         ),
         "mid": PersonalityWeights(
-            expansion=1.10,
-            economy=1.75,
-            defense=1.05,
-            aggression=0.80,
-            development=1.60,
+            expansion=1.35,
+            economy=1.35,
+            defense=0.85,
+            aggression=1.00,
+            development=1.45,
         ),
         "late": PersonalityWeights(
-            expansion=0.85,
-            economy=1.65,
-            defense=1.20,
-            aggression=1.00,
-            development=1.40,
+            expansion=1.25,
+            economy=1.15,
+            defense=0.90,
+            aggression=1.25,
+            development=1.35,
         ),
     },
     "fortifier": {
