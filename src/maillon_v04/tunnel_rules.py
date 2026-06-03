@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from src.maillon_v04.state import ActorId, GameState, ResourceName
+from src.maillon_v04.tunnels import TUNNEL_RAID_KORN_COST
 
 
 TUNNEL_ENTRANCE_COSTS: dict[ResourceName, int] = {
@@ -36,3 +37,15 @@ def tunnel_extend_cost(state: GameState, actor: ActorId) -> dict[ResourceName, i
     _ = state
     _ = actor
     return dict(TUNNEL_EXTEND_COSTS)
+
+
+def tunnel_raid_cost(state: GameState, actor: ActorId) -> dict[ResourceName, int]:
+    """
+    Cost for a shield-bypassing tunnel raid.
+
+    The parameters are accepted for future scaling / scenario rules.
+    """
+
+    _ = state
+    _ = actor
+    return {"Korn": TUNNEL_RAID_KORN_COST}
