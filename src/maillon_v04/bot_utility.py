@@ -290,7 +290,7 @@ def score_field_upgrade(state: GameState, actor: ActorId, action: Action) -> tup
 
     target = action.target
     cell = state.cell(target)
-    cost = field_upgrade_cost_stein(state, actor, target)
+    cost = field_upgrade_cost_stein(state, actor)
     pressure = resource_pressure(state, actor, "Stein")
 
     raw = 10.0

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
+from src.maillon_v04.bot_utility import choose_best_utility_action
 from src.maillon_v04.actions import (
     Action,
     affordable_build_targets,
@@ -20,7 +21,7 @@ from src.maillon_v04.rules import (
 from src.maillon_v04.state import ActorId, GameState
 
 
-BotPolicy = Literal["rusher", "phase_player"]
+BotPolicy = Literal["rusher", "phase_player", "utility_balancer"]
 
 
 def actor_core(state: GameState, actor: ActorId) -> Coord:
@@ -421,5 +422,12 @@ def choose_bot_action(
 
     if policy == "phase_player":
         return choose_phase_player_action(state, actor)
+
+    if policy == "utility_balancer":
+        return choose_best_utility_action(
+            state=state,
+            actor=actor,
+            personality="balancer",
+        )
 
     raise ValueError(f"Unknown bot policy: {policy}")
