@@ -1,0 +1,17 @@
+side_length,board_size,turn_order,first_actor,matchup,player_policy,enemy_policy,winner,winner_went_first,win_reason,final_round,threshold_60,p_controlled,e_controlled,p_non_core,e_non_core,neutral_fields,build,raid,raid_success_total,raid_takeovers,raid_absorbed_by_shield,fortify,rebuild,field_upgrade,core_upgrade,wait,p_build,p_raid,p_fortify,p_wait,e_build,e_raid,e_fortify,e_wait,p_holz_waste,p_stein_waste,p_korn_waste,e_holz_waste,e_stein_waste,e_korn_waste,p_holz,p_stein,p_korn,e_holz,e_stein,e_korn,final_shielded_fields,final_shield_points,final_max_shield
+4,37,player_first,player,phase_player_vs_phase_player,phase_player,phase_player,player,True,territory,18,23,23,2,22,1,12,21,32,32,29,3,6,4,11,2,27,14,19,5,4,7,13,1,23,16,37,11,0,11,0,8,12,11,1,12,9,3,3,1
+4,37,player_first,player,phase_player_vs_rusher,phase_player,rusher,player,True,domination,5,23,11,1,10,0,25,8,5,5,4,1,1,0,0,0,12,5,4,1,4,3,1,0,8,0,0,0,0,0,6,3,5,0,1,0,6,0,0,0
+4,37,player_first,player,rusher_vs_phase_player,rusher,phase_player,player,True,domination,22,23,22,1,21,0,14,19,41,41,35,6,6,8,4,2,47,11,28,0,15,8,13,6,32,0,0,63,0,0,0,8,6,11,2,7,12,0,0,0
+4,37,player_first,player,rusher_vs_rusher,rusher,rusher,player,True,domination,4,23,7,1,6,0,29,4,3,3,3,0,0,0,0,0,12,2,3,0,5,2,0,0,7,0,0,3,0,0,4,2,0,2,2,0,6,0,0,0
+4,37,enemy_first,enemy,phase_player_vs_phase_player,phase_player,phase_player,enemy,True,domination,13,23,1,19,0,18,17,16,18,18,15,3,7,2,6,2,22,6,6,1,18,10,12,6,4,0,10,0,4,4,9,1,12,2,9,11,11,4,4,1
+4,37,enemy_first,enemy,phase_player_vs_rusher,phase_player,rusher,enemy,True,domination,16,23,1,20,0,19,16,17,30,30,26,4,4,3,2,2,33,9,8,4,22,8,22,0,11,0,0,0,1,0,24,1,7,11,10,5,11,0,0,0
+4,37,enemy_first,enemy,rusher_vs_phase_player,rusher,phase_player,enemy,True,domination,5,23,1,11,0,10,25,8,5,5,4,1,1,0,0,0,12,3,1,0,8,5,4,1,4,0,0,6,0,0,0,1,0,6,3,5,0,0,0,0
+4,37,enemy_first,enemy,rusher_vs_rusher,rusher,rusher,enemy,True,domination,4,23,1,7,0,6,29,4,3,3,3,0,0,0,0,0,12,2,0,0,7,2,3,0,5,0,0,4,0,0,3,2,0,6,2,0,2,0,0,0
+5,61,player_first,player,phase_player_vs_phase_player,phase_player,phase_player,player,True,domination,41,37,35,1,34,0,25,32,76,76,33,43,55,3,20,2,55,22,28,49,6,10,48,6,49,81,253,188,0,63,10,10,0,7,0,12,3,12,12,1
+5,61,player_first,player,phase_player_vs_rusher,phase_player,rusher,player,True,domination,7,37,14,1,13,0,46,11,7,7,7,0,1,0,0,1,19,7,6,1,6,4,1,0,13,0,0,1,0,0,11,3,9,0,1,0,6,1,1,1
+5,61,player_first,player,rusher_vs_phase_player,rusher,phase_player,player,True,domination,16,37,21,1,20,0,39,18,29,29,25,4,4,2,5,2,31,4,24,0,12,14,5,4,19,0,3,34,0,0,6,2,8,10,2,3,12,0,0,0
+5,61,player_first,player,rusher_vs_rusher,rusher,rusher,player,True,domination,7,37,10,1,9,0,50,7,5,5,5,0,0,1,0,0,25,3,5,0,11,4,0,0,14,0,0,15,0,0,14,0,0,0,1,0,6,0,0,0
+5,61,enemy_first,enemy,phase_player_vs_phase_player,phase_player,phase_player,enemy,True,territory,60,37,8,37,7,36,16,41,160,160,78,82,100,9,20,2,23,22,90,26,17,19,70,74,6,0,29,454,218,460,403,0,12,12,12,12,11,18,18,1
+5,61,enemy_first,enemy,phase_player_vs_rusher,phase_player,rusher,enemy,True,domination,13,37,1,17,0,16,43,14,19,19,15,4,4,4,2,2,29,10,2,4,16,4,17,0,13,0,0,3,0,0,21,1,7,12,5,5,8,0,0,0
+5,61,enemy_first,enemy,rusher_vs_phase_player,rusher,phase_player,enemy,True,domination,7,37,1,14,0,13,46,11,7,7,7,0,1,0,0,1,19,4,1,0,13,7,6,1,6,0,0,11,0,0,1,1,0,6,3,9,0,1,1,1
+5,61,enemy_first,enemy,rusher_vs_rusher,rusher,rusher,enemy,True,domination,7,37,1,10,0,9,50,7,5,5,5,0,0,1,0,0,25,4,0,0,14,3,5,0,11,0,0,14,0,0,13,1,0,6,1,1,0,0,0,0
