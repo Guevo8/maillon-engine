@@ -7,11 +7,15 @@ from src.maillon_v04.board import Coord
 from src.maillon_v04.state import ActorId, GameState
 from src.maillon_v04.rules import can_pay, pay_resources, winner_by_territory
 from src.maillon_v04.tunnel_collapse import check_collapses
-from src.maillon_v04.tunnel_rules import tunnel_entrance_cost, tunnel_extend_cost
+from src.maillon_v04.tunnel_rules import (
+    tunnel_entrance_cost,
+    tunnel_extend_cost,
+    tunnel_raid_cost,
+)
 from src.maillon_v04.tunnels import add_tunnel_edge, has_tunnel_edge, tunnel_access_nodes
 
 
-TunnelActionType = Literal["tunnel_entrance", "tunnel_extend"]
+TunnelActionType = Literal["tunnel_entrance", "tunnel_extend", "tunnel_raid"]
 
 
 @dataclass(frozen=True)
@@ -118,6 +122,43 @@ def affordable_tunnel_extend_targets(state: GameState, actor: ActorId) -> list[t
         return []
 
     return tunnel_extend_targets(state, actor)
+
+
+def tunnel_raid_targets(state: GameState, actor: ActorId) -> list[Coord]:
+    """
+    Enemy non-core surface fields reachable through the actor's tunnel network.
+
+    Tunnel raid is a precise shield-bypass action. The target must be the field
+    under the reachable tunnel node, not an adjacent field.
+    """
+
+    enemy = state.opponent(actor)
+    targets: list[Coord] = []
+
+    for coord in sorted(tunnel_access_nodes(state, actor)):
+        cell = state.cell(coord)
+
+        if cell.collapsed:
+            continue
+
+        if cell.owner != enemy:
+            continue
+
+        if cell.is_core:
+            continue
+
+        targets.append(coord)
+
+    return targets
+
+
+def affordable_tunnel_raid_targets(state: GameState, actor: ActorId) -> list[Coord]:
+    costs = tunnel_raid_cost(state, actor)
+
+    if not can_pay(state, actor, costs):
+        return []
+
+    return tunnel_raid_targets(state, actor)
 
 
 def apply_tunnel_entrance(state: GameState, action: TunnelAction) -> TunnelActionResult:
@@ -248,12 +289,84 @@ def apply_tunnel_extend(state: GameState, action: TunnelAction) -> TunnelActionR
     )
 
 
+def apply_tunnel_raid(state: GameState, action: TunnelAction) -> TunnelActionResult:
+    actor = action.actor
+    target = action.target
+
+    if action.action_type != "tunnel_raid":
+        return TunnelActionResult(
+            ok=False,
+            action=action,
+            message=f"unknown tunnel action type: {action.action_type}",
+            winner=winner_by_territory(state),
+        )
+
+    if target is None:
+        return TunnelActionResult(
+            ok=False,
+            action=action,
+            message="tunnel_raid requires a target.",
+            winner=winner_by_territory(state),
+        )
+
+    if target not in state.cells:
+        return TunnelActionResult(
+            ok=False,
+            action=action,
+            message=f"target is not on board: {target}",
+            winner=winner_by_territory(state),
+        )
+
+    if target not in tunnel_raid_targets(state, actor):
+        return TunnelActionResult(
+            ok=False,
+            action=action,
+            message=f"invalid tunnel_raid target: {target}",
+            winner=winner_by_territory(state),
+        )
+
+    costs = tunnel_raid_cost(state, actor)
+
+    if not can_pay(state, actor, costs):
+        return TunnelActionResult(
+            ok=False,
+            action=action,
+            message=f"not enough resources for tunnel_raid. need={costs}",
+            winner=winner_by_territory(state),
+        )
+
+    pay_resources(state, actor, costs)
+
+    cell = state.cell(target)
+    old_shield = cell.raid_shield
+    cell.owner = actor
+    cell.raid_shield = 0
+    cell.contested_count += 1
+
+    cooldown = min(3, cell.contested_count)
+    cell.active_from_round = state.round_index + cooldown
+
+    return TunnelActionResult(
+        ok=True,
+        action=action,
+        message=(
+            f"{actor} tunnel-raids {target} for {costs}. "
+            f"shield bypassed from {old_shield} to 0, "
+            f"contested={cell.contested_count}, active_from_round={cell.active_from_round}."
+        ),
+        winner=winner_by_territory(state),
+    )
+
+
 def apply_tunnel_action(state: GameState, action: TunnelAction) -> TunnelActionResult:
     if action.action_type == "tunnel_entrance":
         return apply_tunnel_entrance(state, action)
 
     if action.action_type == "tunnel_extend":
         return apply_tunnel_extend(state, action)
+
+    if action.action_type == "tunnel_raid":
+        return apply_tunnel_raid(state, action)
 
     return TunnelActionResult(
         ok=False,
