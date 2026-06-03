@@ -11,6 +11,8 @@ from src.maillon_v04.rules import (
     can_pay,
     core_upgrade_cost_stein,
     field_upgrade_cost_stein,
+    fortify_cost_korn,
+    MAX_RAID_SHIELD,
     pay_resources,
     raid_cost_korn,
     rebuild_cost_holz,
@@ -24,6 +26,7 @@ ActionType = Literal[
     "rebuild",
     "field_upgrade",
     "core_upgrade",
+    "fortify",
     "wait",
 ]
 
@@ -125,6 +128,25 @@ def field_upgrade_targets(state: GameState, actor: ActorId) -> list[Coord]:
     return sorted(targets)
 
 
+def fortify_targets(state: GameState, actor: ActorId) -> list[Coord]:
+    """
+    Eigene aktive Nicht-Core-Felder mit Raid-Schutz < MAX_RAID_SHIELD.
+    """
+
+    targets: list[Coord] = []
+
+    for coord in state.active_owned_cells(actor):
+        cell = state.cell(coord)
+
+        if cell.is_core:
+            continue
+
+        if cell.field_type in {"Holz", "Stein", "Korn"} and cell.raid_shield < MAX_RAID_SHIELD:
+            targets.append(coord)
+
+    return sorted(targets)
+
+
 def core_upgrade_targets(state: GameState, actor: ActorId) -> list[Coord]:
     """
     Eigener aktiver Core mit Level 1.
@@ -182,6 +204,18 @@ def affordable_field_upgrade_targets(state: GameState, actor: ActorId) -> list[C
     return field_upgrade_targets(state, actor)
 
 
+def affordable_fortify_targets(state: GameState, actor: ActorId) -> list[Coord]:
+    result: list[Coord] = []
+
+    for target in fortify_targets(state, actor):
+        cost = fortify_cost_korn(state, actor, target)
+
+        if can_pay(state, actor, {"Korn": cost}):
+            result.append(target)
+
+    return result
+
+
 def affordable_core_upgrade_targets(state: GameState, actor: ActorId) -> list[Coord]:
     if not can_pay(state, actor, {"Stein": core_upgrade_cost_stein(state, actor)}):
         return []
@@ -205,6 +239,8 @@ def action_summary(state: GameState, actor: ActorId) -> dict[str, int]:
         "affordable_field_upgrade_targets": len(affordable_field_upgrade_targets(state, actor)),
         "core_upgrade_targets": len(core_upgrade_targets(state, actor)),
         "affordable_core_upgrade_targets": len(affordable_core_upgrade_targets(state, actor)),
+        "fortify_targets": len(fortify_targets(state, actor)),
+        "affordable_fortify_targets": len(affordable_fortify_targets(state, actor)),
     }
 
 
@@ -263,6 +299,9 @@ def apply_action(state: GameState, action: Action) -> ActionResult:
 
     if action.action_type == "core_upgrade":
         return apply_core_upgrade(state, action)
+
+    if action.action_type == "fortify":
+        return apply_fortify(state, action)
 
     return ActionResult(
         ok=False,
@@ -340,7 +379,28 @@ def apply_raid(state: GameState, action: Action) -> ActionResult:
     pay_resources(state, actor, {"Korn": cost})
 
     cell = state.cell(target)
+
+    if cell.raid_shield > 0:
+        cell.raid_shield -= 1
+        cell.contested_count += 1
+
+        cooldown = min(3, cell.contested_count)
+        cell.active_from_round = state.round_index + cooldown
+
+        return ActionResult(
+            ok=True,
+            action=action,
+            message=(
+                f"{actor} raids {target} for {cost} Korn. "
+                f"raid_shield reduced to {cell.raid_shield}, "
+                f"contested={cell.contested_count}, active_from_round={cell.active_from_round}. "
+                "No takeover."
+            ),
+            winner=winner_by_territory(state),
+        )
+
     cell.owner = actor
+    cell.raid_shield = 0
     cell.contested_count += 1
 
     cooldown = min(3, cell.contested_count)
@@ -352,6 +412,45 @@ def apply_raid(state: GameState, action: Action) -> ActionResult:
         message=(
             f"{actor} raids {target} for {cost} Korn. "
             f"contested={cell.contested_count}, active_from_round={cell.active_from_round}."
+        ),
+        winner=winner_by_territory(state),
+    )
+
+
+def apply_fortify(state: GameState, action: Action) -> ActionResult:
+    actor = action.actor
+    target = action.target
+    assert target is not None
+
+    if target not in fortify_targets(state, actor):
+        return ActionResult(
+            ok=False,
+            action=action,
+            message=f"invalid fortify target: {target}",
+            winner=winner_by_territory(state),
+        )
+
+    cost = fortify_cost_korn(state, actor, target)
+
+    if not can_pay(state, actor, {"Korn": cost}):
+        return ActionResult(
+            ok=False,
+            action=action,
+            message=f"not enough Korn for fortify. need={cost}",
+            winner=winner_by_territory(state),
+        )
+
+    pay_resources(state, actor, {"Korn": cost})
+
+    cell = state.cell(target)
+    cell.raid_shield += 1
+
+    return ActionResult(
+        ok=True,
+        action=action,
+        message=(
+            f"{actor} fortifies {target} for {cost} Korn. "
+            f"raid_shield={cell.raid_shield}/{MAX_RAID_SHIELD}."
         ),
         winner=winner_by_territory(state),
     )

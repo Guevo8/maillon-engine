@@ -14,6 +14,9 @@ FIELD_UPGRADE_COSTS_STEIN: tuple[int, ...] = (3, 4, 6, 8, 12)
 CORE_UPGRADE_COST_STEIN = 4
 REBUILD_COST_HOLZ = 2
 
+MAX_RAID_SHIELD = 3
+FORTIFY_COSTS_KORN: tuple[int, ...] = (2, 4, 6)
+
 BASE_CAP = 6
 CORE_LEVEL_2_CAP_BONUS = 6
 
@@ -64,6 +67,37 @@ def rebuild_cost_holz(state: GameState, actor: ActorId) -> int:
     _ = state
     _ = actor
     return REBUILD_COST_HOLZ
+
+
+def fortify_cost_korn(state: GameState, actor: ActorId, target: Coord) -> int:
+    """
+    Befestigen / Fortify:
+
+    Schutz 0 -> 1 kostet 2 Korn.
+    Schutz 1 -> 2 kostet 4 Korn.
+    Schutz 2 -> 3 kostet 6 Korn.
+
+    Maximaler Raid-Schutz: 3.
+    """
+
+    cell = state.cell(target)
+
+    if cell.owner != actor:
+        raise ValueError(f"fortify target is not owned by actor: actor={actor}, target={target}")
+
+    if cell.is_core:
+        raise ValueError(f"core cannot be fortified: {target}")
+
+    if cell.field_type not in {"Holz", "Stein", "Korn"}:
+        raise ValueError(f"fortify target has invalid field type: {target}")
+
+    if cell.raid_shield < 0:
+        raise ValueError(f"raid_shield must not be negative: {target}")
+
+    if cell.raid_shield >= MAX_RAID_SHIELD:
+        raise ValueError(f"raid_shield already at max: {target}")
+
+    return FORTIFY_COSTS_KORN[cell.raid_shield]
 
 
 def active_support_count_for_target(

@@ -190,6 +190,7 @@ def serialize_engine_state(engine: GameEngine, run_id: str | None = None) -> dic
                 "active_from_round": cell.active_from_round,
                 "active": state.is_active(coord),
                 "contested_count": cell.contested_count,
+                "raid_shield": cell.raid_shield,
             }
         )
 

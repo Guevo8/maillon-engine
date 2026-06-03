@@ -35,8 +35,12 @@ class CellState:
         Wird bei Build, Rebuild und Raid-Instabilität relevant.
 
     contested_count:
-        Wie oft dieses Feld per Raid übernommen wurde.
+        Wie oft dieses Feld per Raid umkämpft wurde.
         Dient für Front-Hotspots und Cooldown.
+
+    raid_shield:
+        Befestigung / Raid-Schutz eines Nicht-Core-Feldes.
+        Jeder gegnerische Raid entfernt zuerst eine Schutzstufe.
     """
 
     owner: ActorId | None = None
@@ -44,6 +48,7 @@ class CellState:
     level: int = 1
     active_from_round: int = 1
     contested_count: int = 0
+    raid_shield: int = 0
 
     @property
     def is_empty(self) -> bool:
@@ -152,6 +157,7 @@ class GameState:
                     level=cell.level,
                     active_from_round=cell.active_from_round,
                     contested_count=cell.contested_count,
+                    raid_shield=cell.raid_shield,
                 )
                 for coord, cell in self.cells.items()
             },
