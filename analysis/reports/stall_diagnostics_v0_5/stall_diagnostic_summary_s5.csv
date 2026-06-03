@@ -1,0 +1,7 @@
+side_length,board_size,matchup,winner,reason,round,p_controlled,e_controlled,neutral,p_build,e_build,p_raid,e_raid,p_wait,e_wait,raid_takeovers,raid_absorbed,p_korn_waste,e_korn_waste,report
+5,61,rusher_vs_utility_opportunist,,none,121,31,26,4,18,35,304,202,35,10,415,91,1410,767,analysis/reports/stall_diagnostics_v0_5/stall_diag_s5_rusher_vs_utility_opportunist.txt
+5,61,utility_rusher_vs_utility_fortifier,,none,121,32,22,7,17,33,321,301,5,5,611,11,855,408,analysis/reports/stall_diagnostics_v0_5/stall_diag_s5_utility_rusher_vs_utility_fortifier.txt
+5,61,utility_rusher_vs_utility_aggro_turtle,,none,121,33,25,3,22,32,305,283,5,6,561,27,1073,944,analysis/reports/stall_diagnostics_v0_5/stall_diag_s5_utility_rusher_vs_utility_aggro_turtle.txt
+5,61,utility_rusher_vs_utility_opportunist,,none,121,30,24,7,18,32,317,297,10,5,600,14,911,494,analysis/reports/stall_diagnostics_v0_5/stall_diag_s5_utility_rusher_vs_utility_opportunist.txt
+5,61,utility_opportunist_vs_rusher,,none,121,24,29,8,37,12,246,316,5,29,507,55,412,1118,analysis/reports/stall_diagnostics_v0_5/stall_diag_s5_utility_opportunist_vs_rusher.txt
+5,61,utility_opportunist_vs_utility_rusher,,none,121,20,29,12,25,20,303,316,7,8,605,14,259,638,analysis/reports/stall_diagnostics_v0_5/stall_diag_s5_utility_opportunist_vs_utility_rusher.txt

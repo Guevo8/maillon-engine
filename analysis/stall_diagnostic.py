@@ -2,8 +2,13 @@ from __future__ import annotations
 
 import argparse
 import csv
+import sys
 from collections import Counter, defaultdict
 from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 from typing import Iterable
 
 from src.maillon_v04.actions import ActionResult, action_summary
@@ -262,6 +267,12 @@ def run_case(
         action_total.update(e_counts)
         actor_action_total["player"].update(p_counts)
         actor_action_total["enemy"].update(e_counts)
+
+        for turn in (result.player_turn, result.enemy_turn):
+            if turn is None:
+                continue
+            for action_result in turn.actions:
+                action_total[classify_result(action_result)] += 1
 
         p_summary = action_summary(engine.state, "player")
         e_summary = action_summary(engine.state, "enemy")
