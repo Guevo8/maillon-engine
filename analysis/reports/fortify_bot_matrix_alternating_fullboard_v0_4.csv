@@ -1,0 +1,9 @@
+side_length,board_size,matchup,winner,win_reason,final_round,player_first_rounds,enemy_first_rounds,p_controlled,e_controlled,neutral_fields,raid_takeovers,raid_absorbed_by_shield,fortify,p_fortify,e_fortify,p_korn_waste,e_korn_waste,final_shielded_fields,final_shield_points
+4,37,phase_player_vs_phase_player,enemy,full_board_majority,26,13,13,15,22,0,38,13,28,14,14,72,108,15,15
+4,37,phase_player_vs_rusher,player,full_board_majority,33,17,16,21,16,0,58,14,23,23,0,195,112,9,9
+4,37,rusher_vs_phase_player,player,territory,33,17,16,23,11,3,55,16,22,0,22,142,76,6,6
+4,37,rusher_vs_rusher,player,domination,16,8,8,11,1,25,22,0,0,0,0,37,9,0,0
+5,61,phase_player_vs_phase_player,player,full_board_majority,58,29,29,31,30,0,113,34,54,23,31,804,631,20,20
+5,61,phase_player_vs_rusher,enemy,territory,74,37,37,15,37,9,165,41,48,48,0,762,1242,7,7
+5,61,rusher_vs_phase_player,player,territory,105,53,52,37,22,2,272,71,84,0,84,1314,1929,13,13
+5,61,rusher_vs_rusher,enemy,territory,74,37,37,8,37,16,172,0,0,0,0,164,892,0,0

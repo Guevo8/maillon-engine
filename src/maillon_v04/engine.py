@@ -92,6 +92,19 @@ class GameEngine:
 
         return self.state.round_index > self.config.max_rounds
 
+    def initiative_first_actor(self) -> ActorId:
+        """
+        v0.4 alternating initiative for bot-vs-bot analysis.
+
+        Odd rounds:  player acts first.
+        Even rounds: enemy acts first.
+        """
+
+        if self.state.round_index % 2 == 1:
+            return "player"
+
+        return "enemy"
+
     def start_round(self) -> dict[ActorId, dict[ResourceName, int]]:
         """
         Führt die Produktion zu Beginn der Runde aus.
@@ -248,14 +261,26 @@ class GameEngine:
         round_index = self.state.round_index
         production_waste = self.start_round()
 
-        player_turn = self.run_bot_turn("player", player_policy)
-        winner = self.current_winner()
+        first_actor = self.initiative_first_actor()
 
+        player_turn: ActorTurnResult | None = None
         enemy_turn: ActorTurnResult | None = None
 
-        if winner is None:
+        if first_actor == "player":
+            player_turn = self.run_bot_turn("player", player_policy)
+            winner = self.current_winner()
+
+            if winner is None:
+                enemy_turn = self.run_bot_turn("enemy", enemy_policy)
+                winner = self.current_winner()
+
+        else:
             enemy_turn = self.run_bot_turn("enemy", enemy_policy)
             winner = self.current_winner()
+
+            if winner is None:
+                player_turn = self.run_bot_turn("player", player_policy)
+                winner = self.current_winner()
 
         result = RoundResult(
             round_index=round_index,

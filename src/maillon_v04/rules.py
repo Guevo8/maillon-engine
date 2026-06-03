@@ -334,6 +334,33 @@ def winner_by_domination(state: GameState) -> ActorId | None:
     return None
 
 
+def winner_by_full_board(state: GameState) -> ActorId | None:
+    """
+    Full-Board-Majority-Win:
+
+    Wenn alle Felder besetzt sind und weder Territory-Win noch Domination-Win
+    greift, gewinnt der Akteur mit mehr kontrollierten Feldern.
+
+    Bei Gleichstand gibt es keinen Gewinner.
+    """
+
+    neutral_fields = sum(1 for cell in state.cells.values() if cell.owner is None)
+
+    if neutral_fields > 0:
+        return None
+
+    player_count = state.controlled_count("player")
+    enemy_count = state.controlled_count("enemy")
+
+    if player_count > enemy_count:
+        return "player"
+
+    if enemy_count > player_count:
+        return "enemy"
+
+    return None
+
+
 def winner_by_territory(state: GameState) -> ActorId | None:
     """
     Historischer Funktionsname bleibt für Kompatibilität erhalten.
@@ -364,4 +391,9 @@ def winner_by_territory(state: GameState) -> ActorId | None:
     if enemy_wins:
         return "enemy"
 
-    return winner_by_domination(state)
+    domination_winner = winner_by_domination(state)
+
+    if domination_winner is not None:
+        return domination_winner
+
+    return winner_by_full_board(state)
