@@ -27,6 +27,48 @@ def read_rows(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(f))
 
 
+def parse_policy_filter(values: list[str] | None) -> set[str]:
+    if not values:
+        return set()
+
+    policies: set[str] = set()
+    for value in values:
+        for part in value.split(","):
+            policy = part.strip()
+            if policy:
+                policies.add(policy)
+
+    return policies
+
+
+def filter_rows(
+    rows: list[dict[str, str]],
+    *,
+    include_policies: set[str],
+    exclude_policies: set[str],
+    focus_policy: str | None,
+) -> list[dict[str, str]]:
+    filtered: list[dict[str, str]] = []
+
+    for row in rows:
+        player_policy = row["player_policy"]
+        enemy_policy = row["enemy_policy"]
+        pair = {player_policy, enemy_policy}
+
+        if include_policies and not pair.issubset(include_policies):
+            continue
+
+        if exclude_policies and pair.intersection(exclude_policies):
+            continue
+
+        if focus_policy and focus_policy not in pair:
+            continue
+
+        filtered.append(row)
+
+    return filtered
+
+
 def new_stats() -> dict[str, object]:
     return {
         "slots": 0,
@@ -137,7 +179,7 @@ def ordered(stats: dict[str, dict[str, object]]) -> list[tuple[str, dict[str, ob
 def problem_rows(rows: list[dict[str, str]], stall_round: int) -> list[dict[str, str]]:
     selected = []
     for row in rows:
-        if not row.get("winner") or row.get("win_reason") == "none":
+        if not row.get("winner") or row.get("win_reason") in {"none", "timeout_draw"}:
             selected.append(row)
         elif i(row, "final_round") >= stall_round:
             selected.append(row)
@@ -197,15 +239,29 @@ def write_csv(path: Path, stats: dict[str, dict[str, object]]) -> None:
             })
 
 
-def build_report(rows: list[dict[str, str]], stats: dict[str, dict[str, object]], source: Path, csv_out: Path, stall_round: int) -> str:
+def build_report(
+    rows: list[dict[str, str]],
+    stats: dict[str, dict[str, object]],
+    source: Path,
+    csv_out: Path,
+    stall_round: int,
+    title: str,
+    original_row_count: int,
+    include_policies: set[str],
+    exclude_policies: set[str],
+    focus_policy: str | None,
+) -> str:
     lines = [
-        "# Maillon v0.5 Personality Report",
+        f"# {title}",
         "",
         "## Source",
         "",
         f"- Input matrix: `{source}`",
         f"- Summary CSV: `{csv_out}`",
-        f"- Rows: {len(rows)}",
+        f"- Rows used: {len(rows)} / {original_row_count}",
+        f"- Include policies: `{', '.join(sorted(include_policies)) if include_policies else 'all'}`",
+        f"- Exclude policies: `{', '.join(sorted(exclude_policies)) if exclude_policies else '-'}`",
+        f"- Focus policy: `{focus_policy or '-'}`",
         "",
         "## Policy Summary",
         "",
@@ -226,8 +282,9 @@ def build_report(rows: list[dict[str, str]], stats: dict[str, dict[str, object]]
         "",
         "## Method Notes",
         "",
-        "- `Slots` means appearances as player plus appearances as enemy.",
+        "- `Slots` means appearances as player plus appearances as enemy within the filtered pool.",
         "- Fortify/Rebuild/Build/Raid/Wait/Waste are actor-side totals.",
+        "- `timeout_majority` is an analysis-only max-round adjudication from runtime_matrix.py, not an engine win rule.",
         "- Current runtime matrix conflict columns such as `raid_takeovers`, `raid_absorbed_by_shield` and `final_shield_points` are match-level metrics, not clean per-policy ownership. They are therefore not used in the policy summary table.",
         "",
         "## Problem Matchups",
@@ -236,12 +293,13 @@ def build_report(rows: list[dict[str, str]], stats: dict[str, dict[str, object]]
 
     problems = problem_rows(rows, stall_round)
     if problems:
-        lines.append("| Board | Matchup | Winner | Reason | Round | P/E/N | Fortify | Rebuild | Takeovers |")
-        lines.append("|---:|---|---|---|---:|---:|---:|---:|---:|")
+        lines.append("| Board | Matchup | Winner | Reason | Natural | Round | P/E/N | Fortify | Rebuild | Takeovers |")
+        lines.append("|---:|---|---|---|---|---:|---:|---:|---:|---:|")
         for row in problems[:30]:
+            natural = row.get("natural_win_reason") or row.get("win_reason") or "none"
             lines.append(
                 f"| {i(row, 'board_size')} | `{row.get('matchup', '-')}` | {row.get('winner') or 'none'} | "
-                f"{row.get('win_reason') or 'none'} | {i(row, 'final_round')} | "
+                f"{row.get('win_reason') or 'none'} | {natural} | {i(row, 'final_round')} | "
                 f"{i(row, 'p_controlled')}/{i(row, 'e_controlled')}/{i(row, 'neutral_fields')} | "
                 f"{i(row, 'fortify')} | {i(row, 'rebuild')} | {i(row, 'raid_takeovers')} |"
             )
@@ -252,9 +310,9 @@ def build_report(rows: list[dict[str, str]], stats: dict[str, dict[str, object]]
         "",
         "## Design Read",
         "",
-        "- `utility_rusher` can stay as a hard stress bot if its high winrate is intentional.",
-        "- `utility_fortifier` needs a stronger win plan if it remains low-win and high-defense.",
-        "- `utility_economist` needs better conversion from economy into upgrades, expansion and territory pressure.",
+        "- Competitive pool reports should usually exclude dedicated stress bots such as `utility_rusher`.",
+        "- Stress pool reports should show whether normal bots survive against the hard pressure bot.",
+        "- `utility_fortifier` and `utility_economist` should be judged by conversion behavior, not only raw winrate.",
         "- `utility_opportunist` is the strongest candidate for a useful non-rusher personality.",
         "",
     ])
@@ -267,13 +325,56 @@ def main() -> None:
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--csv-out", type=Path, default=DEFAULT_CSV)
     parser.add_argument("--stall-round", type=int, default=121)
+    parser.add_argument("--title", default="Maillon v0.5 Personality Report")
+    parser.add_argument(
+        "--include-policies",
+        nargs="*",
+        default=None,
+        help="Only include matchups where both policies are in this list. Comma-separated values are accepted.",
+    )
+    parser.add_argument(
+        "--exclude-policies",
+        nargs="*",
+        default=None,
+        help="Exclude matchups where either side uses one of these policies. Comma-separated values are accepted.",
+    )
+    parser.add_argument(
+        "--focus-policy",
+        default=None,
+        help="Only include matchups where this policy appears on either side.",
+    )
     args = parser.parse_args()
 
-    rows = read_rows(args.input)
+    all_rows = read_rows(args.input)
+    include_policies = parse_policy_filter(args.include_policies)
+    exclude_policies = parse_policy_filter(args.exclude_policies)
+    focus_policy = args.focus_policy.strip() if args.focus_policy else None
+
+    rows = filter_rows(
+        all_rows,
+        include_policies=include_policies,
+        exclude_policies=exclude_policies,
+        focus_policy=focus_policy,
+    )
+
+    if not rows:
+        raise ValueError("No rows left after applying report filters.")
+
     stats = summarize(rows)
     write_csv(args.csv_out, stats)
 
-    report = build_report(rows, stats, args.input, args.csv_out, args.stall_round)
+    report = build_report(
+        rows,
+        stats,
+        args.input,
+        args.csv_out,
+        args.stall_round,
+        args.title,
+        len(all_rows),
+        include_policies,
+        exclude_policies,
+        focus_policy,
+    )
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(report + "\n", encoding="utf-8")
 
