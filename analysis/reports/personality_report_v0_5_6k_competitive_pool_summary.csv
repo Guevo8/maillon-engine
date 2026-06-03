@@ -1,0 +1,8 @@
+policy,wins,slots,win_rate,draws,avg_rounds,as_player,as_enemy,player_wins,enemy_wins,fortify,rebuild,build,raid,wait,korn_waste,avg_final_controlled,top_win_reason,top_loss_reason
+rusher,22,28,0.79,1,53.04,14,14,10,12,0,9,459,2719,1125,13781,25.68,full_board_majority:12,full_board_majority:2
+utility_opportunist,21,28,0.75,0,37.75,14,14,10,11,1311,23,654,842,187,3174,24.96,full_board_majority:21,full_board_majority:6
+phase_player,18,28,0.64,0,44.21,14,14,9,9,750,131,554,1643,278,10841,25.36,full_board_majority:14,full_board_majority:8
+utility_economist,11,28,0.39,1,35.75,14,14,6,5,1063,33,676,831,170,3649,23.54,full_board_majority:11,full_board_majority:15
+utility_balancer,9,28,0.32,0,33.96,14,14,6,3,1112,50,672,633,219,3060,23.29,full_board_majority:8,full_board_majority:15
+utility_aggro_turtle,9,28,0.32,0,34.57,14,14,5,4,1129,79,656,653,207,2953,23.21,full_board_majority:8,full_board_majority:15
+utility_fortifier,7,28,0.25,0,36.43,14,14,4,3,1124,52,671,809,205,3461,23.04,full_board_majority:6,full_board_majority:19
