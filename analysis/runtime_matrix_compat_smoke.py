@@ -35,6 +35,55 @@ REQUIRED_COLUMNS = {
     "raid_takeovers",
     "raid_absorbed_by_shield",
     "final_shield_points",
+    "tunnel_entrance",
+    "tunnel_extend",
+    "tunnel_raid",
+    "repair_build",
+    "tunnel_raid_takeovers",
+    "shield_bypassed",
+    "collapsed_fields_total",
+    "collapsed_fields_final",
+    "tunnel_edges_final",
+    "tunnel_nodes_final",
+    "network_components_final",
+    "largest_tunnel_component",
+    "fields_with_tunnel_entrance",
+    "max_tunnel_pressure_final",
+    "avg_tunnel_pressure_final_x100",
+    "p_tunnel_entrance",
+    "p_tunnel_extend",
+    "p_tunnel_raid",
+    "p_repair_build",
+    "e_tunnel_entrance",
+    "e_tunnel_extend",
+    "e_tunnel_raid",
+    "e_repair_build",
+}
+
+ZERO_TUNNEL_COLUMNS = {
+    "tunnel_entrance",
+    "tunnel_extend",
+    "tunnel_raid",
+    "repair_build",
+    "tunnel_raid_takeovers",
+    "shield_bypassed",
+    "collapsed_fields_total",
+    "collapsed_fields_final",
+    "tunnel_edges_final",
+    "tunnel_nodes_final",
+    "network_components_final",
+    "largest_tunnel_component",
+    "fields_with_tunnel_entrance",
+    "max_tunnel_pressure_final",
+    "avg_tunnel_pressure_final_x100",
+    "p_tunnel_entrance",
+    "p_tunnel_extend",
+    "p_tunnel_raid",
+    "p_repair_build",
+    "e_tunnel_entrance",
+    "e_tunnel_extend",
+    "e_tunnel_raid",
+    "e_repair_build",
 }
 
 
@@ -71,8 +120,11 @@ def run_smoke() -> None:
         assert_equal(missing, set(), f"missing required columns for {row.get('matchup')}")
         assert_true(int(row["final_round"]) >= 1, f"final_round for {row['matchup']}")
 
+        for column in ZERO_TUNNEL_COLUMNS:
+            assert_equal(int(row[column]), 0, f"{column} should remain 0 before tunnel-aware bots in {row['matchup']}")
+
     print("rows:", len(rows))
-    print("board,matchup,winner,reason,round,p/e/n,build,raid,fortify,rebuild,wait")
+    print("board,matchup,winner,reason,round,p/e/n,build,raid,fortify,rebuild,wait,tunnel_entrance,tunnel_extend,tunnel_raid,repair_build")
 
     for row in rows:
         print(
@@ -86,7 +138,11 @@ def run_smoke() -> None:
             f"{row['raid']},"
             f"{row['fortify']},"
             f"{row['rebuild']},"
-            f"{row['wait']}"
+            f"{row['wait']},"
+            f"{row['tunnel_entrance']},"
+            f"{row['tunnel_extend']},"
+            f"{row['tunnel_raid']},"
+            f"{row['repair_build']}"
         )
 
     print()
