@@ -8,6 +8,7 @@ from src.maillon_v04.actions import (
     affordable_build_targets,
     affordable_core_upgrade_targets,
     affordable_field_upgrade_targets,
+    affordable_fortify_targets,
     affordable_raid_targets,
     affordable_rebuild_targets,
     apply_action,
@@ -21,6 +22,7 @@ from src.maillon_v04.rules import (
     build_cost_holz,
     core_upgrade_cost_stein,
     field_upgrade_cost_stein,
+    fortify_cost_korn,
     raid_cost_korn,
     rebuild_cost_holz,
 )
@@ -153,6 +155,7 @@ def print_front_targets(state: GameState, actor: ActorId = "player") -> None:
     print(f"Raid-Ziele:          {len(affordable_raid_targets(state, actor))}")
     print(f"Rebuild-Ziele:       {len(affordable_rebuild_targets(state, actor))}")
     print(f"Field-Upgrade-Ziele: {len(affordable_field_upgrade_targets(state, actor))}")
+    print(f"Fortify-Ziele:       {len(affordable_fortify_targets(state, actor))}")
     print(f"Core-Upgrade-Ziele:  {len(affordable_core_upgrade_targets(state, actor))}")
 
 
@@ -281,6 +284,30 @@ def core_upgrade_action_from_input(state: GameState, actor: ActorId) -> Action |
     )
 
 
+def fortify_action_from_input(state: GameState, actor: ActorId) -> Action | None:
+    targets = affordable_fortify_targets(state, actor)
+
+    items: list[tuple[str, object]] = [
+        (
+            f"{coord_label(state, coord)} | Schutz={state.cell(coord).raid_shield}/3 "
+            f"| Kosten: {fortify_cost_korn(state, actor, coord)} Korn",
+            coord,
+        )
+        for coord in targets
+    ]
+
+    target = choose_from_numbered_list("Fortify-Ziel wählen", items)
+
+    if target is None:
+        return None
+
+    return Action(
+        actor=actor,
+        action_type="fortify",
+        target=cast(Coord, target),
+    )
+
+
 
 def player_available_counts(state: GameState) -> dict[str, int]:
     return {
@@ -288,6 +315,7 @@ def player_available_counts(state: GameState) -> dict[str, int]:
         "raid": len(affordable_raid_targets(state, "player")),
         "rebuild": len(affordable_rebuild_targets(state, "player")),
         "field_upgrade": len(affordable_field_upgrade_targets(state, "player")),
+        "fortify": len(affordable_fortify_targets(state, "player")),
         "core_upgrade": len(affordable_core_upgrade_targets(state, "player")),
     }
 
@@ -311,6 +339,7 @@ def print_player_action_header(engine: GameEngine, action_number: int) -> dict[s
         f"Raid {counts['raid']} | "
         f"Rebuild {counts['rebuild']} | "
         f"Upgrade {counts['field_upgrade']} | "
+        f"Fortify {counts['fortify']} | "
         f"Core {counts['core_upgrade']}"
     )
 
@@ -336,6 +365,9 @@ def choose_player_action(engine: GameEngine, action_number: int) -> object:
 
         if counts["field_upgrade"] > 0:
             menu.append(("field_upgrade", f"Field Upgrade ({counts['field_upgrade']})"))
+
+        if counts["fortify"] > 0:
+            menu.append(("fortify", f"Fortify ({counts['fortify']})"))
 
         if counts["core_upgrade"] > 0:
             menu.append(("core_upgrade", f"Core Upgrade ({counts['core_upgrade']})"))
@@ -406,6 +438,12 @@ def choose_player_action(engine: GameEngine, action_number: int) -> object:
 
             if key == "core_upgrade":
                 action = core_upgrade_action_from_input(state, "player")
+                if action is None:
+                    continue
+                return action
+
+            if key == "fortify":
+                action = fortify_action_from_input(state, "player")
                 if action is None:
                     continue
                 return action
