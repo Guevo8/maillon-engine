@@ -8,6 +8,7 @@ from src.maillon_v04.state import ActorId, GameState
 from src.maillon_v04.rules import can_pay, pay_resources, winner_by_territory
 from src.maillon_v04.tunnel_collapse import check_collapses
 from src.maillon_v04.tunnel_rules import (
+    repair_build_cost,
     tunnel_entrance_cost,
     tunnel_extend_cost,
     tunnel_raid_cost,
@@ -15,7 +16,13 @@ from src.maillon_v04.tunnel_rules import (
 from src.maillon_v04.tunnels import add_tunnel_edge, has_tunnel_edge, tunnel_access_nodes
 
 
-TunnelActionType = Literal["tunnel_entrance", "tunnel_extend", "tunnel_raid"]
+TunnelActionType = Literal[
+    "tunnel_entrance",
+    "tunnel_extend",
+    "tunnel_raid",
+    "repair_build",
+]
+BuildFieldType = Literal["Holz", "Stein", "Korn"]
 
 
 @dataclass(frozen=True)
@@ -24,6 +31,7 @@ class TunnelAction:
     action_type: TunnelActionType
     target: Coord | None = None
     source: Coord | None = None
+    field_type: BuildFieldType | None = None
 
 
 @dataclass(frozen=True)
@@ -33,6 +41,13 @@ class TunnelActionResult:
     message: str
     winner: ActorId | None = None
     collapsed: tuple[Coord, ...] = ()
+
+
+def validate_field_type_for_repair_build(field_type: BuildFieldType | None) -> BuildFieldType:
+    if field_type not in {"Holz", "Stein", "Korn"}:
+        raise ValueError("field_type must be one of: Holz, Stein, Korn")
+
+    return field_type
 
 
 def tunnel_entrance_targets(state: GameState, actor: ActorId) -> list[Coord]:
@@ -159,6 +174,36 @@ def affordable_tunnel_raid_targets(state: GameState, actor: ActorId) -> list[Coo
         return []
 
     return tunnel_raid_targets(state, actor)
+
+
+def repair_build_targets(state: GameState, actor: ActorId) -> list[Coord]:
+    """
+    Collapsed fields adjacent to at least one active owned non-collapsed field.
+
+    repair_build is a special build-like action for broken coordinates. It is
+    not normal build on neutral land.
+    """
+
+    targets: set[Coord] = set()
+
+    for origin in state.active_owned_cells(actor):
+        if state.cell(origin).collapsed:
+            continue
+
+        for target in state.board.neighbors(origin):
+            if state.cell(target).collapsed:
+                targets.add(target)
+
+    return sorted(targets)
+
+
+def affordable_repair_build_targets(state: GameState, actor: ActorId) -> list[Coord]:
+    costs = repair_build_cost(state, actor)
+
+    if not can_pay(state, actor, costs):
+        return []
+
+    return repair_build_targets(state, actor)
 
 
 def apply_tunnel_entrance(state: GameState, action: TunnelAction) -> TunnelActionResult:
@@ -358,6 +403,77 @@ def apply_tunnel_raid(state: GameState, action: TunnelAction) -> TunnelActionRes
     )
 
 
+def apply_repair_build(state: GameState, action: TunnelAction) -> TunnelActionResult:
+    actor = action.actor
+    target = action.target
+
+    if action.action_type != "repair_build":
+        return TunnelActionResult(
+            ok=False,
+            action=action,
+            message=f"unknown tunnel action type: {action.action_type}",
+            winner=winner_by_territory(state),
+        )
+
+    if target is None:
+        return TunnelActionResult(
+            ok=False,
+            action=action,
+            message="repair_build requires a target.",
+            winner=winner_by_territory(state),
+        )
+
+    if target not in state.cells:
+        return TunnelActionResult(
+            ok=False,
+            action=action,
+            message=f"target is not on board: {target}",
+            winner=winner_by_territory(state),
+        )
+
+    field_type = validate_field_type_for_repair_build(action.field_type)
+
+    if target not in repair_build_targets(state, actor):
+        return TunnelActionResult(
+            ok=False,
+            action=action,
+            message=f"invalid repair_build target: {target}",
+            winner=winner_by_territory(state),
+        )
+
+    costs = repair_build_cost(state, actor)
+
+    if not can_pay(state, actor, costs):
+        return TunnelActionResult(
+            ok=False,
+            action=action,
+            message=f"not enough resources for repair_build. need={costs}",
+            winner=winner_by_territory(state),
+        )
+
+    pay_resources(state, actor, costs)
+
+    cell = state.cell(target)
+    cell.collapsed = False
+    cell.owner = actor
+    cell.field_type = field_type
+    cell.level = 1
+    cell.raid_shield = 0
+    cell.has_tunnel_entrance = False
+    cell.contested_count = 0
+    cell.active_from_round = state.round_index + 1
+
+    return TunnelActionResult(
+        ok=True,
+        action=action,
+        message=(
+            f"{actor} repair-builds {field_type} at {target} for {costs}. "
+            f"active_from_round={cell.active_from_round}."
+        ),
+        winner=winner_by_territory(state),
+    )
+
+
 def apply_tunnel_action(state: GameState, action: TunnelAction) -> TunnelActionResult:
     if action.action_type == "tunnel_entrance":
         return apply_tunnel_entrance(state, action)
@@ -367,6 +483,9 @@ def apply_tunnel_action(state: GameState, action: TunnelAction) -> TunnelActionR
 
     if action.action_type == "tunnel_raid":
         return apply_tunnel_raid(state, action)
+
+    if action.action_type == "repair_build":
+        return apply_repair_build(state, action)
 
     return TunnelActionResult(
         ok=False,
