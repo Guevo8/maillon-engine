@@ -497,6 +497,66 @@ def apply_strategic_pressure(
                 multiplier *= 0.15
                 context.append("neutral_behind_wait_extra_down")
 
+    # 6G tuned1: finish expansion pressure.
+    #
+    # 61er-Stall-Diagnose zeigte Raid-Churn:
+    # sehr viele Raids/Takeovers, aber neutrale Felder bleiben offen.
+    #
+    # Ziel:
+    # - führende oder gleichstarke Utility-Bots sollen offene neutrale Felder
+    #   im späten/nahen Finish stärker schließen,
+    # - passive Aktionen werden in diesen Zuständen gedämpft,
+    # - Raid bleibt erlaubt, dominiert aber nicht jeden Endgame-Zug.
+    finish_window = (
+        neutral > 0
+        and actor_controlled >= opponent_controlled
+        and actor_to_threshold <= max(5, neutral + 3)
+    )
+    late_open_board = neutral > 0 and state.round_index >= 45
+
+    if finish_window:
+        if action.action_type == "build":
+            multiplier *= 2.20
+            bonus += 20.0 + max(0, 8 - actor_to_threshold) * 3.0
+            context.append(
+                f"finish_window_build_up actor_to={actor_to_threshold} neutral={neutral}"
+            )
+        elif action.action_type == "raid":
+            multiplier *= 0.82
+            context.append(
+                f"finish_window_raid_soft_down actor_to={actor_to_threshold} neutral={neutral}"
+            )
+        elif action.action_type == "fortify":
+            multiplier *= 0.35
+            context.append("finish_window_fortify_down")
+        elif action.action_type == "rebuild":
+            multiplier *= 0.20
+            context.append("finish_window_rebuild_down")
+        elif action.action_type == "wait":
+            multiplier *= 0.05
+            context.append("finish_window_wait_down")
+        elif category in {"economy", "development"}:
+            multiplier *= 0.55
+            context.append("finish_window_dev_econ_down")
+
+    if late_open_board:
+        if action.action_type == "build":
+            multiplier *= 1.65
+            bonus += min(18.0, neutral * 1.8)
+            context.append(f"late_open_board_build_up neutral={neutral}")
+        elif action.action_type == "raid":
+            multiplier *= 0.90
+            context.append("late_open_board_raid_soft_down")
+        elif action.action_type == "fortify":
+            multiplier *= 0.65
+            context.append("late_open_board_fortify_down")
+        elif action.action_type == "rebuild":
+            multiplier *= 0.30
+            context.append("late_open_board_rebuild_down")
+        elif action.action_type == "wait":
+            multiplier *= 0.05
+            context.append("late_open_board_wait_down")
+
     adjusted = max(raw * multiplier + bonus, 0.0)
 
     resources = state.actor_state(actor).resources

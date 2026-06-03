@@ -1,0 +1,7 @@
+side_length,board_size,matchup,winner,reason,round,p_controlled,e_controlled,neutral,p_build,e_build,p_raid,e_raid,p_wait,e_wait,raid_takeovers,raid_absorbed,p_korn_waste,e_korn_waste,report
+5,61,rusher_vs_utility_opportunist,enemy,territory,38,11,37,13,15,29,51,43,42,5,80,14,117,243,analysis/reports/stall_diagnostics_v0_5_6g/stall_diag_s5_rusher_vs_utility_opportunist.txt
+5,61,utility_rusher_vs_utility_fortifier,player,territory,33,37,22,2,27,28,52,38,9,6,78,12,164,118,analysis/reports/stall_diagnostics_v0_5_6g/stall_diag_s5_utility_rusher_vs_utility_fortifier.txt
+5,61,utility_rusher_vs_utility_aggro_turtle,player,full_board_majority,35,34,27,0,28,29,55,44,12,5,90,9,144,186,analysis/reports/stall_diagnostics_v0_5_6g/stall_diag_s5_utility_rusher_vs_utility_aggro_turtle.txt
+5,61,utility_rusher_vs_utility_opportunist,enemy,territory,36,23,37,1,26,30,53,54,16,5,99,8,144,222,analysis/reports/stall_diagnostics_v0_5_6g/stall_diag_s5_utility_rusher_vs_utility_opportunist.txt
+5,61,utility_opportunist_vs_rusher,player,domination,29,35,1,25,23,9,27,23,5,50,44,6,135,33,analysis/reports/stall_diagnostics_v0_5_6g/stall_diag_s5_utility_opportunist_vs_rusher.txt
+5,61,utility_opportunist_vs_utility_rusher,enemy,full_board_majority,48,26,35,0,32,25,81,91,8,12,162,10,171,318,analysis/reports/stall_diagnostics_v0_5_6g/stall_diag_s5_utility_opportunist_vs_utility_rusher.txt
