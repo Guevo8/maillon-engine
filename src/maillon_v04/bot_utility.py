@@ -24,6 +24,7 @@ from .rules import (
     fortify_cost_korn,
     raid_cost_korn,
     rebuild_cost_holz,
+    territory_threshold_60,
 )
 from .state import ActorId, Coord, GameState
 
@@ -374,6 +375,185 @@ def score_wait(state: GameState, actor: ActorId, action: Action) -> tuple[float,
     return 0.05, ("fallback",)
 
 
+
+def neutral_field_count(state: GameState) -> int:
+    return sum(1 for cell in state.cells.values() if cell.owner is None)
+
+
+def apply_strategic_pressure(
+    state: GameState,
+    actor: ActorId,
+    action: Action,
+    category: UtilityCategory,
+    raw: float,
+    reasons: tuple[str, ...],
+) -> tuple[float, tuple[str, ...]]:
+    """
+    v0.5 tuned2 strategic context layer.
+
+    The base score still evaluates the action locally.
+    This layer changes priority based on match state:
+    - behind -> prefer build/raid, reduce fortify/wait/economy
+    - opponent near territory -> prefer interrupt/expand, reduce passive actions
+    - actor near territory -> prefer finishing build/raid
+    - many neutral fields -> prefer expansion
+    """
+
+    actor_controlled = state.controlled_count(actor)
+    opponent = state.opponent(actor)
+    opponent_controlled = state.controlled_count(opponent)
+    threshold = territory_threshold_60(state)
+    neutral = neutral_field_count(state)
+
+    actor_to_threshold = max(0, threshold - actor_controlled)
+    opponent_to_threshold = max(0, threshold - opponent_controlled)
+
+    behind = actor_controlled < opponent_controlled
+    far_behind = (opponent_controlled - actor_controlled) >= max(4, state.board.radius)
+
+    multiplier = 1.0
+    bonus = 0.0
+    context: list[str] = []
+
+    # If we can finish soon, expansion and decisive raids matter more than passive play.
+    if actor_to_threshold <= 3:
+        if action.action_type == "build":
+            bonus += 18.0 + (4 - actor_to_threshold) * 6.0
+            context.append(f"actor_near_territory_build_bonus actor_to={actor_to_threshold}")
+        elif action.action_type == "raid":
+            bonus += 8.0
+            context.append(f"actor_near_territory_raid_bonus actor_to={actor_to_threshold}")
+        elif category in {"defense", "economy", "development", "fallback"}:
+            multiplier *= 0.55
+            context.append(f"actor_near_territory_passive_down actor_to={actor_to_threshold}")
+
+    # If the opponent is close to territory victory, passive actions are dangerous.
+    if opponent_to_threshold <= 4:
+        if action.action_type == "raid":
+            multiplier *= 1.35
+            bonus += 5.0
+            context.append(f"opponent_near_territory_raid_up opponent_to={opponent_to_threshold}")
+        elif action.action_type == "build":
+            multiplier *= 1.55
+            bonus += 6.0
+            context.append(f"opponent_near_territory_build_up opponent_to={opponent_to_threshold}")
+        elif action.action_type == "fortify":
+            multiplier *= 0.28
+            context.append(f"opponent_near_territory_fortify_down opponent_to={opponent_to_threshold}")
+        elif action.action_type == "rebuild":
+            multiplier *= 0.08
+            context.append(f"opponent_near_territory_rebuild_hard_down opponent_to={opponent_to_threshold}")
+        elif category in {"economy", "development"}:
+            multiplier *= 0.20
+            context.append(f"opponent_near_territory_dev_econ_down opponent_to={opponent_to_threshold}")
+        elif action.action_type == "wait":
+            multiplier *= 0.02
+            context.append(f"opponent_near_territory_wait_down opponent_to={opponent_to_threshold}")
+
+    # When behind, the bot should stop turtling and look for progress.
+    if behind:
+        if action.action_type == "build":
+            multiplier *= 1.60
+            bonus += 4.0
+            context.append("behind_build_up")
+        elif action.action_type == "raid":
+            multiplier *= 1.12
+            context.append("behind_raid_moderate_up")
+        elif action.action_type == "fortify":
+            multiplier *= 0.38
+            context.append("behind_fortify_down")
+        elif action.action_type == "rebuild":
+            multiplier *= 0.30
+            context.append("behind_rebuild_down")
+        elif category in {"economy", "development"}:
+            multiplier *= 0.45
+            context.append("behind_dev_econ_down")
+        elif action.action_type == "wait":
+            multiplier *= 0.04
+            context.append("behind_wait_down")
+
+        if far_behind and action.action_type == "fortify":
+            multiplier *= 0.45
+            context.append("far_behind_fortify_extra_down")
+
+    # If a lot of the board is still neutral, expansion must stay attractive.
+    if neutral > 0:
+        neutral_ratio = neutral / state.board.size
+
+        if action.action_type == "build" and neutral_ratio >= 0.12:
+            expansion_boost = 1.0 + min(0.65, neutral_ratio * 1.4)
+            multiplier *= expansion_boost
+            bonus += neutral_ratio * 8.0
+            context.append(f"neutral_expansion_boost={expansion_boost:.2f}")
+
+        if behind and neutral_ratio >= 0.12:
+            if action.action_type == "fortify":
+                multiplier *= 0.70
+                context.append("neutral_behind_fortify_extra_down")
+            elif action.action_type == "rebuild":
+                multiplier *= 0.45
+                context.append("neutral_behind_rebuild_extra_down")
+            elif action.action_type == "wait":
+                multiplier *= 0.15
+                context.append("neutral_behind_wait_extra_down")
+
+    adjusted = max(raw * multiplier + bonus, 0.0)
+
+    resources = state.actor_state(actor).resources
+
+    has_holz_production = any(
+        cell.owner == actor
+        and not cell.is_core
+        and cell.field_type == "Holz"
+        for cell in state.cells.values()
+    )
+
+    should_save_for_build = (
+        behind
+        and neutral > 0
+        and has_holz_production
+        and resources["Holz"] < build_cost_holz(state, actor)
+    )
+
+    # tuned2d: if expansion is still possible but the bot is short on Holz,
+    # rebuilding is usually destructive because it spends the exact resource
+    # needed for the next build. In that state, wait becomes a valid saving move.
+    if should_save_for_build:
+        if action.action_type == "rebuild":
+            adjusted = 0.0
+            context.append("save_for_build_rebuild_zero")
+
+        elif action.action_type == "wait":
+            adjusted = max(adjusted, 9.0)
+            context.append("save_for_build_wait_floor=9")
+
+    # tuned2c/tuned2d: hard caps for rebuild in losing / pressure states.
+    # Rebuild can be useful in stable economy phases, but it must not beat
+    # build/raid when the bot is behind, when many neutral fields remain,
+    # or when the opponent is close to territory victory.
+    if action.action_type == "rebuild":
+        if behind:
+            adjusted = min(adjusted, 4.0)
+            context.append("behind_rebuild_score_cap=4")
+
+        if behind and neutral > 0:
+            adjusted = min(adjusted, 1.0)
+            context.append("behind_neutral_rebuild_score_cap=1")
+
+        if opponent_to_threshold <= 4:
+            adjusted = min(adjusted, 0.5)
+            context.append("opponent_near_rebuild_score_cap=0.5")
+
+    if context:
+        reasons = reasons + (
+            f"context_multiplier={multiplier:.2f}",
+            f"context_bonus={bonus:.2f}",
+            *context,
+        )
+
+    return adjusted, reasons
+
+
 def score_action(
     state: GameState,
     actor: ActorId,
@@ -398,6 +578,15 @@ def score_action(
         raw, reasons = score_rebuild(state, actor, action)
     else:
         raw, reasons = score_wait(state, actor, action)
+
+    raw, reasons = apply_strategic_pressure(
+        state=state,
+        actor=actor,
+        action=action,
+        category=category,
+        raw=raw,
+        reasons=reasons,
+    )
 
     return UtilityScore(
         action=action,

@@ -1,0 +1,435 @@
+UTILITY DECISION PROBE SUMMARY
+========================================================================
+
+side_length=4 | matchup=phase_player_vs_utility_balancer | actor=enemy
+------------------------------------------------------------------------
+decisions: 67
+behind_decisions: 47
+chosen_action:build: 21
+chosen_category:expansion: 21
+behind_action:build: 19
+behind_category:expansion: 19
+chosen_action:raid: 18
+chosen_category:aggression: 18
+behind_action:raid: 17
+behind_category:aggression: 17
+chosen_action:fortify: 15
+chosen_category:defense: 15
+chosen_action:wait: 10
+chosen_category:fallback: 10
+behind_action:wait: 8
+behind_category:fallback: 8
+chosen_category:development: 3
+behind_action:fortify: 2
+behind_category:defense: 2
+chosen_action:field_upgrade: 2
+chosen_action:core_upgrade: 1
+behind_action:core_upgrade: 1
+behind_category:development: 1
+
+side_length=4 | matchup=phase_player_vs_utility_balancer | actor=match
+------------------------------------------------------------------------
+final_round: 23
+p_controlled_final: 19
+e_controlled_final: 18
+winner:player: 1
+reason:full_board_majority: 1
+neutral_final: 0
+
+side_length=4 | matchup=rusher_vs_utility_balancer | actor=enemy
+------------------------------------------------------------------------
+decisions: 78
+behind_decisions: 48
+chosen_action:raid: 28
+chosen_category:aggression: 28
+behind_action:raid: 27
+behind_category:aggression: 27
+chosen_action:build: 21
+chosen_category:expansion: 21
+behind_action:build: 16
+behind_category:expansion: 16
+chosen_action:fortify: 16
+chosen_category:defense: 16
+opponent_near_territory_decisions: 12
+opponent_near_action:raid: 9
+chosen_action:wait: 6
+chosen_category:fallback: 6
+chosen_category:development: 5
+chosen_action:field_upgrade: 4
+behind_action:wait: 2
+behind_category:fallback: 2
+chosen_action:rebuild: 2
+chosen_category:economy: 2
+behind_action:field_upgrade: 2
+behind_category:development: 2
+opponent_near_action:build: 2
+chosen_action:core_upgrade: 1
+behind_action:fortify: 1
+behind_category:defense: 1
+opponent_near_action:fortify: 1
+
+side_length=4 | matchup=rusher_vs_utility_balancer | actor=match
+------------------------------------------------------------------------
+final_round: 27
+p_controlled_final: 23
+e_controlled_final: 9
+neutral_final: 5
+winner:player: 1
+reason:territory: 1
+
+side_length=4 | matchup=utility_balancer_vs_phase_player | actor=match
+------------------------------------------------------------------------
+final_round: 27
+p_controlled_final: 19
+e_controlled_final: 18
+winner:player: 1
+reason:full_board_majority: 1
+neutral_final: 0
+
+side_length=4 | matchup=utility_balancer_vs_phase_player | actor=player
+------------------------------------------------------------------------
+decisions: 81
+behind_decisions: 47
+chosen_action:fortify: 25
+chosen_category:defense: 25
+chosen_action:raid: 24
+chosen_category:aggression: 24
+behind_action:raid: 22
+behind_category:aggression: 22
+chosen_action:build: 19
+chosen_category:expansion: 19
+behind_action:build: 15
+behind_category:expansion: 15
+chosen_action:wait: 7
+chosen_category:fallback: 7
+chosen_category:development: 5
+opponent_near_territory_decisions: 5
+chosen_action:field_upgrade: 4
+behind_action:wait: 4
+behind_category:fallback: 4
+behind_action:fortify: 4
+behind_category:defense: 4
+opponent_near_action:raid: 4
+behind_action:field_upgrade: 2
+behind_category:development: 2
+chosen_action:core_upgrade: 1
+opponent_near_action:fortify: 1
+chosen_action:rebuild: 1
+chosen_category:economy: 1
+
+side_length=4 | matchup=utility_balancer_vs_rusher | actor=match
+------------------------------------------------------------------------
+final_round: 44
+e_controlled_final: 23
+p_controlled_final: 12
+neutral_final: 2
+winner:enemy: 1
+reason:territory: 1
+
+side_length=4 | matchup=utility_balancer_vs_rusher | actor=player
+------------------------------------------------------------------------
+decisions: 129
+behind_decisions: 94
+chosen_action:raid: 50
+chosen_category:aggression: 50
+behind_action:raid: 50
+behind_category:aggression: 50
+chosen_action:fortify: 35
+chosen_category:defense: 35
+opponent_near_territory_decisions: 29
+chosen_action:build: 19
+chosen_category:expansion: 19
+behind_action:build: 18
+behind_category:expansion: 18
+opponent_near_action:raid: 16
+behind_action:fortify: 15
+behind_category:defense: 15
+chosen_action:wait: 11
+chosen_category:fallback: 11
+opponent_near_action:fortify: 9
+chosen_category:development: 8
+chosen_action:field_upgrade: 7
+chosen_action:rebuild: 6
+chosen_category:economy: 6
+behind_action:wait: 5
+behind_category:fallback: 5
+behind_action:field_upgrade: 3
+behind_category:development: 3
+behind_action:rebuild: 3
+behind_category:economy: 3
+opponent_near_action:rebuild: 3
+chosen_action:core_upgrade: 1
+opponent_near_action:field_upgrade: 1
+
+side_length=4 | matchup=utility_balancer_vs_utility_balancer | actor=enemy
+------------------------------------------------------------------------
+decisions: 48
+chosen_action:fortify: 19
+chosen_category:defense: 19
+chosen_action:build: 15
+chosen_category:expansion: 15
+behind_decisions: 11
+behind_action:build: 7
+behind_category:expansion: 7
+chosen_action:wait: 6
+chosen_category:fallback: 6
+chosen_action:raid: 4
+chosen_category:aggression: 4
+chosen_category:development: 3
+chosen_action:field_upgrade: 2
+behind_action:raid: 2
+behind_category:aggression: 2
+chosen_action:core_upgrade: 1
+behind_action:fortify: 1
+behind_category:defense: 1
+behind_action:wait: 1
+behind_category:fallback: 1
+chosen_action:rebuild: 1
+chosen_category:economy: 1
+
+side_length=4 | matchup=utility_balancer_vs_utility_balancer | actor=match
+------------------------------------------------------------------------
+p_controlled_final: 19
+e_controlled_final: 18
+final_round: 17
+winner:player: 1
+reason:full_board_majority: 1
+neutral_final: 0
+
+side_length=4 | matchup=utility_balancer_vs_utility_balancer | actor=player
+------------------------------------------------------------------------
+decisions: 50
+behind_decisions: 20
+chosen_action:build: 18
+chosen_category:expansion: 18
+chosen_action:fortify: 16
+chosen_category:defense: 16
+behind_action:build: 12
+behind_category:expansion: 12
+chosen_action:wait: 7
+chosen_category:fallback: 7
+chosen_action:raid: 5
+chosen_category:aggression: 5
+chosen_category:development: 4
+behind_action:raid: 4
+behind_category:aggression: 4
+chosen_action:field_upgrade: 3
+behind_category:development: 2
+behind_action:wait: 2
+behind_category:fallback: 2
+chosen_action:core_upgrade: 1
+behind_action:core_upgrade: 1
+behind_action:field_upgrade: 1
+
+side_length=5 | matchup=phase_player_vs_utility_balancer | actor=enemy
+------------------------------------------------------------------------
+decisions: 145
+behind_decisions: 88
+chosen_action:fortify: 49
+chosen_category:defense: 49
+chosen_action:raid: 49
+chosen_category:aggression: 49
+behind_action:raid: 43
+behind_category:aggression: 43
+chosen_action:build: 36
+chosen_category:expansion: 36
+behind_action:build: 32
+behind_category:expansion: 32
+chosen_action:wait: 9
+chosen_category:fallback: 9
+behind_action:wait: 7
+behind_category:fallback: 7
+behind_action:fortify: 5
+behind_category:defense: 5
+chosen_category:development: 2
+chosen_action:core_upgrade: 1
+behind_action:core_upgrade: 1
+behind_category:development: 1
+chosen_action:field_upgrade: 1
+
+side_length=5 | matchup=phase_player_vs_utility_balancer | actor=match
+------------------------------------------------------------------------
+final_round: 49
+p_controlled_final: 32
+e_controlled_final: 29
+winner:player: 1
+reason:full_board_majority: 1
+neutral_final: 0
+
+side_length=5 | matchup=rusher_vs_utility_balancer | actor=enemy
+------------------------------------------------------------------------
+decisions: 324
+behind_decisions: 196
+chosen_action:raid: 165
+chosen_category:aggression: 165
+behind_action:raid: 158
+behind_category:aggression: 158
+chosen_action:fortify: 109
+chosen_category:defense: 109
+chosen_action:build: 32
+chosen_category:expansion: 32
+behind_action:build: 17
+behind_category:expansion: 17
+behind_action:fortify: 15
+behind_category:defense: 15
+opponent_near_territory_decisions: 12
+chosen_category:development: 10
+opponent_near_action:raid: 10
+chosen_action:field_upgrade: 9
+behind_action:field_upgrade: 6
+behind_category:development: 6
+chosen_action:wait: 5
+chosen_category:fallback: 5
+chosen_action:rebuild: 3
+chosen_category:economy: 3
+chosen_action:core_upgrade: 1
+opponent_near_action:fortify: 1
+opponent_near_action:field_upgrade: 1
+
+side_length=5 | matchup=rusher_vs_utility_balancer | actor=match
+------------------------------------------------------------------------
+final_round: 109
+p_controlled_final: 37
+e_controlled_final: 16
+neutral_final: 8
+winner:player: 1
+reason:territory: 1
+
+side_length=5 | matchup=utility_balancer_vs_phase_player | actor=match
+------------------------------------------------------------------------
+final_round: 50
+e_controlled_final: 37
+p_controlled_final: 22
+neutral_final: 2
+winner:enemy: 1
+reason:territory: 1
+
+side_length=5 | matchup=utility_balancer_vs_phase_player | actor=player
+------------------------------------------------------------------------
+decisions: 147
+behind_decisions: 126
+chosen_action:raid: 62
+chosen_category:aggression: 62
+behind_action:raid: 61
+behind_category:aggression: 61
+chosen_action:fortify: 32
+chosen_category:defense: 32
+chosen_action:build: 26
+chosen_category:expansion: 26
+behind_action:build: 25
+behind_category:expansion: 25
+behind_action:fortify: 19
+behind_category:defense: 19
+chosen_action:wait: 15
+chosen_category:fallback: 15
+opponent_near_territory_decisions: 15
+behind_action:wait: 11
+behind_category:fallback: 11
+chosen_category:development: 10
+chosen_action:field_upgrade: 9
+behind_action:field_upgrade: 8
+behind_category:development: 8
+opponent_near_action:raid: 6
+opponent_near_action:fortify: 4
+chosen_action:rebuild: 2
+chosen_category:economy: 2
+behind_action:rebuild: 2
+behind_category:economy: 2
+opponent_near_action:rebuild: 2
+opponent_near_action:wait: 2
+chosen_action:core_upgrade: 1
+opponent_near_action:field_upgrade: 1
+
+side_length=5 | matchup=utility_balancer_vs_rusher | actor=match
+------------------------------------------------------------------------
+final_round: 52
+e_controlled_final: 37
+p_controlled_final: 18
+neutral_final: 6
+winner:enemy: 1
+reason:territory: 1
+
+side_length=5 | matchup=utility_balancer_vs_rusher | actor=player
+------------------------------------------------------------------------
+decisions: 153
+behind_decisions: 94
+chosen_action:raid: 68
+chosen_category:aggression: 68
+behind_action:raid: 64
+behind_category:aggression: 64
+chosen_action:build: 41
+chosen_category:expansion: 41
+chosen_action:fortify: 33
+chosen_category:defense: 33
+behind_action:build: 29
+behind_category:expansion: 29
+chosen_category:development: 6
+opponent_near_territory_decisions: 6
+chosen_action:wait: 5
+chosen_category:fallback: 5
+chosen_action:field_upgrade: 5
+opponent_near_action:raid: 4
+opponent_near_action:build: 2
+chosen_action:core_upgrade: 1
+behind_action:field_upgrade: 1
+behind_category:development: 1
+
+side_length=5 | matchup=utility_balancer_vs_utility_balancer | actor=enemy
+------------------------------------------------------------------------
+decisions: 150
+chosen_action:fortify: 90
+chosen_category:defense: 90
+behind_decisions: 42
+chosen_action:build: 29
+chosen_category:expansion: 29
+behind_action:build: 18
+behind_category:expansion: 18
+chosen_action:raid: 18
+chosen_category:aggression: 18
+behind_action:raid: 12
+behind_category:aggression: 12
+behind_action:fortify: 8
+behind_category:defense: 8
+chosen_action:wait: 5
+chosen_category:fallback: 5
+chosen_category:development: 5
+chosen_action:field_upgrade: 4
+chosen_action:rebuild: 3
+chosen_category:economy: 3
+behind_action:rebuild: 3
+behind_category:economy: 3
+chosen_action:core_upgrade: 1
+behind_action:field_upgrade: 1
+behind_category:development: 1
+
+side_length=5 | matchup=utility_balancer_vs_utility_balancer | actor=match
+------------------------------------------------------------------------
+final_round: 51
+p_controlled_final: 32
+e_controlled_final: 29
+winner:player: 1
+reason:full_board_majority: 1
+neutral_final: 0
+
+side_length=5 | matchup=utility_balancer_vs_utility_balancer | actor=player
+------------------------------------------------------------------------
+decisions: 151
+chosen_action:fortify: 84
+chosen_category:defense: 84
+behind_decisions: 30
+chosen_action:build: 28
+chosen_category:expansion: 28
+chosen_action:raid: 22
+chosen_category:aggression: 22
+behind_action:raid: 17
+behind_category:aggression: 17
+behind_action:build: 13
+behind_category:expansion: 13
+chosen_action:rebuild: 8
+chosen_category:economy: 8
+chosen_action:wait: 5
+chosen_category:fallback: 5
+chosen_category:development: 4
+chosen_action:field_upgrade: 3
+chosen_action:core_upgrade: 1
+
