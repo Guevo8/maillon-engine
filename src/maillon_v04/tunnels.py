@@ -133,22 +133,28 @@ def tunnel_components(state: GameState) -> list[set[Coord]]:
 
 
 def actor_tunnel_entrances(state: GameState, actor: ActorId) -> list[Coord]:
+    """
+    Active owned entrance fields.
+
+    An entrance is a valid reachable tunnel node even before the first tunnel
+    edge is built from it. This is required so tunnel_extend can start a fresh
+    network from an isolated entrance.
+    """
+
     return sorted(
         coord
         for coord in state.active_owned_cells(actor)
         if state.cell(coord).has_tunnel_entrance
         and not state.cell(coord).collapsed
-        and is_under_tunnel(state, coord)
     )
 
 
-def reachable_tunnel_nodes(state: GameState, actor: ActorId) -> set[Coord]:
+def tunnel_access_nodes(state: GameState, actor: ActorId) -> set[Coord]:
     """
-    Return the tunnel component reachable by actor-owned active entrances.
+    Return coordinates where the actor can enter or continue tunnel play.
 
-    Tunnel edges themselves are not owned. Once an actor has an active entrance
-    into a connected component, all non-collapsed nodes in that component are
-    reachable.
+    This includes isolated entrances and all tunnel nodes reachable from those
+    entrances through non-collapsed tunnel edges.
     """
 
     starts = actor_tunnel_entrances(state, actor)
@@ -176,3 +182,15 @@ def reachable_tunnel_nodes(state: GameState, actor: ActorId) -> set[Coord]:
                 queue.append(neighbor)
 
     return reachable
+
+
+def reachable_tunnel_nodes(state: GameState, actor: ActorId) -> set[Coord]:
+    """
+    Compatibility alias for tunnel_access_nodes().
+
+    Historically this name referred only to tunnel graph nodes. In v0.6.1 it
+    also includes active owned entrance fields so a fresh network can start from
+    an entrance before any tunnel edge exists.
+    """
+
+    return tunnel_access_nodes(state, actor)
