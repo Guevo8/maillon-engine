@@ -8,6 +8,11 @@ TUNNEL_ENTRANCE_COSTS: dict[ResourceName, int] = {
     "Stein": 2,
 }
 
+TUNNEL_EXTEND_COSTS: dict[ResourceName, int] = {
+    "Holz": 1,
+    "Stein": 1,
+}
+
 
 def tunnel_entrance_cost(state: GameState, actor: ActorId) -> dict[ResourceName, int]:
     """
@@ -19,3 +24,15 @@ def tunnel_entrance_cost(state: GameState, actor: ActorId) -> dict[ResourceName,
     _ = state
     _ = actor
     return dict(TUNNEL_ENTRANCE_COSTS)
+
+
+def tunnel_extend_cost(state: GameState, actor: ActorId) -> dict[ResourceName, int]:
+    """
+    Cost for extending the underground tunnel graph by one adjacent edge.
+
+    The parameters are accepted for future scaling / scenario rules.
+    """
+
+    _ = state
+    _ = actor
+    return dict(TUNNEL_EXTEND_COSTS)
