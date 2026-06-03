@@ -267,6 +267,50 @@ def choose_rebuild_field_type(state: GameState, actor: ActorId, target: Coord) -
     return None
 
 
+def neutral_field_count(state: GameState) -> int:
+    return sum(1 for cell in state.cells.values() if cell.owner is None)
+
+
+def actor_field_type_count(
+    state: GameState,
+    actor: ActorId,
+    field_type: str,
+) -> int:
+    return sum(
+        1
+        for cell in state.cells.values()
+        if cell.owner == actor
+        and not cell.is_core
+        and cell.field_type == field_type
+    )
+
+
+def rusher_should_save_for_build(state: GameState, actor: ActorId) -> bool:
+    """
+    Finish-Fix für den Rusher.
+
+    Wenn noch neutrale Felder offen sind und der Rusher Holzproduktion hat,
+    soll er Holz nicht durch Rebuild-Oszillation verbrennen, sondern auf
+    den nächsten Build sparen.
+    """
+
+    if neutral_field_count(state) <= 0:
+        return False
+
+    resources = state.actor_state(actor).resources
+    build_cost = build_cost_holz(state, actor)
+
+    if resources["Holz"] >= build_cost:
+        return False
+
+    # Wenn gar keine Holzproduktion mehr existiert, darf Rebuild als Notfall
+    # wieder sinnvoll sein. Sonst lieber sparen.
+    if actor_field_type_count(state, actor, "Holz") <= 0:
+        return False
+
+    return True
+
+
 def choose_rusher_action(state: GameState, actor: ActorId) -> Action:
     raids = affordable_raid_targets(state, actor)
     if raids:
@@ -301,6 +345,9 @@ def choose_rusher_action(state: GameState, actor: ActorId) -> Action:
             target=core_upgrades[0],
         )
 
+    if rusher_should_save_for_build(state, actor):
+        return Action(actor=actor, action_type="wait")
+
     rebuilds = affordable_rebuild_targets(state, actor)
     for target in rebuilds:
         new_type = choose_rebuild_field_type(state, actor, target)
@@ -313,7 +360,6 @@ def choose_rusher_action(state: GameState, actor: ActorId) -> Action:
             )
 
     return Action(actor=actor, action_type="wait")
-
 
 def choose_phase_player_action(state: GameState, actor: ActorId) -> Action:
     """
