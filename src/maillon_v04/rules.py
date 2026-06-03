@@ -270,7 +270,44 @@ def has_territory_win(state: GameState, actor: ActorId) -> bool:
     return state.controlled_count(actor) >= territory_threshold_60(state)
 
 
+def has_domination_win(state: GameState, actor: ActorId) -> bool:
+    """
+    Domination-Win:
+    Ein Akteur gewinnt, wenn der Gegner keine Nicht-Core-Felder mehr kontrolliert.
+
+    Der gegnerische Core allein reicht nicht, um im Spiel zu bleiben.
+    Diese Regel verhindert künstlich verlängerte Endgames auf großen Boards.
+    """
+
+    opponent = state.opponent(actor)
+    return state.non_core_controlled_count(opponent) == 0
+
+
+def winner_by_domination(state: GameState) -> ActorId | None:
+    player_wins = has_domination_win(state, "player")
+    enemy_wins = has_domination_win(state, "enemy")
+
+    if player_wins and enemy_wins:
+        # Sollte im normalen Start-/Spielzustand nicht auftreten.
+        return None
+
+    if player_wins:
+        return "player"
+
+    if enemy_wins:
+        return "enemy"
+
+    return None
+
+
 def winner_by_territory(state: GameState) -> ActorId | None:
+    """
+    Historischer Funktionsname bleibt für Kompatibilität erhalten.
+
+    v0.4 Patch 16:
+    Sieg kann jetzt über 60%-Gebietskontrolle oder Domination entstehen.
+    """
+
     player_wins = has_territory_win(state, "player")
     enemy_wins = has_territory_win(state, "enemy")
 
@@ -293,4 +330,4 @@ def winner_by_territory(state: GameState) -> ActorId | None:
     if enemy_wins:
         return "enemy"
 
-    return None
+    return winner_by_domination(state)
