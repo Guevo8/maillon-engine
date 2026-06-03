@@ -7,6 +7,7 @@ from src.maillon_v04.actions import (
     affordable_build_targets,
     affordable_core_upgrade_targets,
     affordable_field_upgrade_targets,
+    affordable_fortify_targets,
     affordable_raid_targets,
     affordable_rebuild_targets,
 )
@@ -149,6 +150,90 @@ def choose_build_field_type_for_rusher(state: GameState, actor: ActorId) -> str:
     return "Korn"
 
 
+def is_front_field(state: GameState, actor: ActorId, coord: Coord) -> bool:
+    opponent = state.opponent(actor)
+
+    for neighbor in state.board.neighbors(coord):
+        if state.cell(neighbor).owner == opponent:
+            return True
+
+    return False
+
+
+def choose_fortify_target(
+    state: GameState,
+    actor: ActorId,
+    options: list[Coord],
+) -> Coord:
+    """
+    Konservative Fortify-Auswahl.
+
+    Priorität:
+    - umkämpfte Felder zuerst,
+    - wichtige Feldtypen leicht bevorzugen,
+    - Nähe zum gegnerischen Core,
+    - deterministische Koordinatenreihenfolge.
+    """
+
+    field_value = {
+        "Stein": 3,
+        "Korn": 2,
+        "Holz": 1,
+        None: 0,
+    }
+
+    target_core = opponent_core(state, actor)
+
+    return min(
+        options,
+        key=lambda coord: (
+            -state.cell(coord).contested_count,
+            -field_value[state.cell(coord).field_type],
+            state.board.distance(coord, target_core),
+            coord[0],
+            coord[1],
+        ),
+    )
+
+
+def conservative_fortify_action(state: GameState, actor: ActorId) -> Action | None:
+    """
+    Minimaler Bot-Fortify-Hebel.
+
+    Der Bot befestigt nur:
+    - eigene aktive Frontfelder,
+    - mit Schutz 0,
+    - wenn Korn-Druck hoch genug ist.
+
+    Dadurch wird Korn-Waste reduziert, ohne dass der Bot sofort jedes Feld
+    zu einer Festung ausbaut.
+    """
+
+    # Nicht zu früh das gesamte Early Game in Defense verwandeln.
+    if state.non_core_controlled_count(actor) < 3:
+        return None
+
+    # Genug Korn / Cap-Druck: Fortify darf als Korn-Sink genutzt werden.
+    if resource_pressure(state, actor, "Korn") < 0.65:
+        return None
+
+    candidates = [
+        coord
+        for coord in affordable_fortify_targets(state, actor)
+        if state.cell(coord).raid_shield == 0
+        and is_front_field(state, actor, coord)
+    ]
+
+    if not candidates:
+        return None
+
+    return Action(
+        actor=actor,
+        action_type="fortify",
+        target=choose_fortify_target(state, actor, candidates),
+    )
+
+
 def choose_rebuild_field_type(state: GameState, actor: ActorId, target: Coord) -> str | None:
     """
     Simpler Rebuild:
@@ -267,7 +352,12 @@ def choose_phase_player_action(state: GameState, actor: ActorId) -> Action:
             target=choose_best_raid_target(state, actor, cheap_raids),
         )
 
-    # 3) Core Upgrade, wenn möglich.
+    # 3) Frontfelder konservativ befestigen, wenn Korn am Cap drückt.
+    fortify = conservative_fortify_action(state, actor)
+    if fortify is not None:
+        return fortify
+
+    # 4) Core Upgrade, wenn möglich.
     core_upgrades = affordable_core_upgrade_targets(state, actor)
     if core_upgrades:
         return Action(
@@ -276,7 +366,7 @@ def choose_phase_player_action(state: GameState, actor: ActorId) -> Action:
             target=core_upgrades[0],
         )
 
-    # 4) Weiterbauen, wenn möglich.
+    # 5) Weiterbauen, wenn möglich.
     builds = affordable_build_targets(state, actor)
     if builds:
         return Action(
@@ -286,7 +376,7 @@ def choose_phase_player_action(state: GameState, actor: ActorId) -> Action:
             field_type=choose_build_field_type_for_phase_player(state, actor),  # type: ignore[arg-type]
         )
 
-    # 5) Upgrades, wenn Stein am Cap drückt oder genug Stein da ist.
+    # 6) Upgrades, wenn Stein am Cap drückt oder genug Stein da ist.
     upgrades = affordable_field_upgrade_targets(state, actor)
     if upgrades:
         stein_pressure = resource_pressure(state, actor, "Stein")
@@ -298,7 +388,7 @@ def choose_phase_player_action(state: GameState, actor: ActorId) -> Action:
                 target=upgrades[0],
             )
 
-    # 6) Teurere Raids erst nach Aufbau-/Upgrade-Prüfung.
+    # 7) Teurere Raids erst nach Aufbau-/Upgrade-Prüfung.
     if raids:
         return Action(
             actor=actor,
@@ -306,7 +396,7 @@ def choose_phase_player_action(state: GameState, actor: ActorId) -> Action:
             target=choose_best_raid_target(state, actor, raids),
         )
 
-    # 7) Rebuild als letzter sinnvoller Ressourcenumbau.
+    # 8) Rebuild als letzter sinnvoller Ressourcenumbau.
     rebuilds = affordable_rebuild_targets(state, actor)
     for target in rebuilds:
         new_type = choose_rebuild_field_type(state, actor, target)
