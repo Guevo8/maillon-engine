@@ -114,26 +114,30 @@ PERSONALITY_WEIGHTS: dict[BotPersonality, dict[GamePhase, PersonalityWeights]] =
         ),
     },
     "fortifier": {
+        # 6E.1 tuned1: Fortifier soll defensiv bleiben, aber nicht mehr in
+        # passiven Fortify-/Rebuild-Schleifen stecken. Defense bleibt über
+        # Durchschnitt, Economy/Development werden gedämpft, Expansion und
+        # Counter-Raid steigen über die Phasen an.
         "early": PersonalityWeights(
-            expansion=1.20,
-            economy=1.25,
-            defense=1.75,
-            aggression=0.60,
-            development=1.10,
+            expansion=1.25,
+            economy=0.95,
+            defense=1.35,
+            aggression=0.90,
+            development=0.95,
         ),
         "mid": PersonalityWeights(
-            expansion=0.95,
-            economy=1.35,
-            defense=1.85,
-            aggression=0.75,
-            development=1.25,
+            expansion=1.15,
+            economy=0.85,
+            defense=1.45,
+            aggression=1.15,
+            development=1.00,
         ),
         "late": PersonalityWeights(
-            expansion=0.70,
-            economy=1.40,
-            defense=1.90,
-            aggression=0.90,
-            development=1.30,
+            expansion=1.05,
+            economy=0.75,
+            defense=1.50,
+            aggression=1.35,
+            development=1.05,
         ),
     },
     "balancer": {
