@@ -1,0 +1,131 @@
+MAILLON STALL DIAGNOSTIC
+========================================================================
+Case: board=61 | player=utility_rusher | enemy=utility_opportunist
+
+FINAL
+------------------------------------------------------------------------
+Round:        75
+Winner:       player
+Reason:       full_board_majority
+Threshold 60: 37
+Controlled:   player 33 | enemy 28 | neutral 0
+Non-core:     player 32 | enemy 27
+
+FINAL RESOURCES
+------------------------------------------------------------------------
+Player: {'Holz': 12, 'Stein': 12, 'Korn': 8} / caps {'Holz': 12, 'Stein': 12, 'Korn': 12}
+Enemy:  {'Holz': 0, 'Stein': 12, 'Korn': 8} / caps {'Holz': 12, 'Stein': 12, 'Korn': 12}
+Player build cost now: 12
+Enemy build cost now:  12
+
+ACTION COUNTS
+------------------------------------------------------------------------
+Total:  {'build': 114, 'fortify': 74, 'wait': 30, 'field_upgrade': 12, 'core_upgrade': 4, 'raid': 332, 'raid_absorbed': 19, 'raid_takeover': 313, 'rebuild': 2}
+Player: {'build': 24, 'fortify': 9, 'wait': 10, 'field_upgrade': 3, 'core_upgrade': 1, 'raid': 178}
+Enemy:  {'build': 33, 'fortify': 28, 'wait': 5, 'field_upgrade': 3, 'core_upgrade': 1, 'raid': 154, 'rebuild': 1}
+
+WASTE TOTAL
+------------------------------------------------------------------------
+Player: {'Holz': 482, 'Stein': 230, 'Korn': 527}
+Enemy:  {'Holz': 328, 'Stein': 31, 'Korn': 374}
+
+FIELD COUNTS
+------------------------------------------------------------------------
+enemy:Core: 1
+enemy:Holz: 10
+enemy:Korn: 17
+player:Core: 1
+player:Holz: 10
+player:Korn: 19
+player:Stein: 3
+
+FRONT / SHIELD
+------------------------------------------------------------------------
+Player front: {'front_fields': 23, 'shielded_front': 6, 'front_shield': 8, 'contested_front': 14}
+Enemy front:  {'front_fields': 18, 'shielded_front': 6, 'front_shield': 10, 'contested_front': 14}
+Inactive owned cells: 17
+Shielded fields:      12
+Shield points:        18
+Contested fields:     36
+
+DIAGNOSIS NOTES
+------------------------------------------------------------------------
+- Resolved by full-board majority, not by clean territory pressure.
+- Very high raid volume: likely raid/front churn rather than resource starvation only.
+
+TOP CONTESTED FIELDS
+------------------------------------------------------------------------
+(1, -1) owner=player type=Korn L1 shield=0 contested=22 active=False active_from=76
+(-1, 0) owner=player type=Korn L1 shield=0 contested=21 active=False active_from=78
+(3, 0) owner=player type=Holz L2 shield=0 contested=21 active=False active_from=78
+(-3, 2) owner=player type=Holz L1 shield=0 contested=20 active=False active_from=76
+(-2, 2) owner=enemy type=Holz L1 shield=0 contested=20 active=False active_from=77
+(-4, 2) owner=enemy type=Holz L1 shield=0 contested=19 active=False active_from=77
+(-3, 3) owner=enemy type=Korn L1 shield=0 contested=18 active=False active_from=78
+(-2, -1) owner=enemy type=Korn L1 shield=0 contested=18 active=False active_from=77
+(2, 1) owner=enemy type=Holz L2 shield=0 contested=18 active=False active_from=76
+(-3, -1) owner=enemy type=Holz L1 shield=0 contested=17 active=False active_from=78
+(0, 2) owner=player type=Holz L1 shield=0 contested=17 active=False active_from=77
+(1, 0) owner=player type=Korn L2 shield=0 contested=17 active=False active_from=76
+
+TOP SHIELDED FIELDS
+------------------------------------------------------------------------
+(-1, 1) owner=player type=Holz L1 shield=3 contested=4 active=True active_from=18
+(0, -1) owner=enemy type=Holz L1 shield=3 contested=3 active=True active_from=18
+(0, 0) owner=enemy type=Holz L1 shield=3 contested=3 active=True active_from=14
+(-1, -1) owner=enemy type=Holz L1 shield=1 contested=2 active=True active_from=24
+(-1, 2) owner=enemy type=Korn L1 shield=1 contested=1 active=True active_from=16
+(-4, 1) owner=player type=Stein L2 shield=1 contested=0 active=True active_from=2
+(-3, 0) owner=player type=Holz L2 shield=1 contested=0 active=True active_from=1
+(-3, 1) owner=player type=Stein L1 shield=1 contested=0 active=True active_from=3
+(-2, 0) owner=player type=Korn L2 shield=1 contested=0 active=True active_from=5
+(-2, 1) owner=player type=Holz L1 shield=1 contested=0 active=True active_from=6
+(0, 1) owner=enemy type=Holz L1 shield=1 contested=0 active=True active_from=9
+(1, 1) owner=enemy type=Holz L1 shield=1 contested=0 active=True active_from=6
+
+LAST 20 ROUNDS
+------------------------------------------------------------------------
+round | first | p/e/n | p_build/raid | e_build/raid | p_res | e_res | p_actions | e_actions | p_waste | e_waste
+   56 | enemy | 30/26/5 | 2/11 | 3/12 | {'Holz': 12, 'Stein': 12, 'Korn': 5} | {'Holz': 12, 'Stein': 12, 'Korn': 6} | {'raid': 3} | {'raid': 2, 'fortify': 1} | {'Holz': 9, 'Stein': 4, 'Korn': 10} | {'Holz': 7, 'Stein': 0, 'Korn': 7}
+   57 | player | 30/26/5 | 2/11 | 4/13 | {'Holz': 12, 'Stein': 12, 'Korn': 9} | {'Holz': 12, 'Stein': 12, 'Korn': 3} | {'raid': 3} | {'raid': 3} | {'Holz': 9, 'Stein': 4, 'Korn': 8} | {'Holz': 10, 'Stein': 0, 'Korn': 6}
+   58 | enemy | 31/25/5 | 2/11 | 3/13 | {'Holz': 12, 'Stein': 12, 'Korn': 4} | {'Holz': 12, 'Stein': 12, 'Korn': 6} | {'raid': 3} | {'raid': 2, 'fortify': 1} | {'Holz': 10, 'Stein': 4, 'Korn': 11} | {'Holz': 6, 'Stein': 0, 'Korn': 6}
+   59 | player | 31/25/5 | 2/10 | 3/13 | {'Holz': 12, 'Stein': 12, 'Korn': 6} | {'Holz': 12, 'Stein': 12, 'Korn': 7} | {'raid': 3} | {'raid': 3} | {'Holz': 10, 'Stein': 4, 'Korn': 6} | {'Holz': 6, 'Stein': 0, 'Korn': 9}
+   60 | enemy | 31/26/4 | 0/12 | 3/14 | {'Holz': 0, 'Stein': 12, 'Korn': 8} | {'Holz': 12, 'Stein': 12, 'Korn': 7} | {'raid': 2, 'build': 1} | {'raid': 3} | {'Holz': 12, 'Stein': 4, 'Korn': 8} | {'Holz': 6, 'Stein': 0, 'Korn': 9}
+   61 | player | 31/26/4 | 0/15 | 3/11 | {'Holz': 9, 'Stein': 12, 'Korn': 6} | {'Holz': 12, 'Stein': 12, 'Korn': 6} | {'raid': 3} | {'raid': 3} | {'Holz': 0, 'Stein': 4, 'Korn': 13} | {'Holz': 6, 'Stein': 0, 'Korn': 9}
+   62 | enemy | 31/27/3 | 0/11 | 3/12 | {'Holz': 0, 'Stein': 12, 'Korn': 8} | {'Holz': 12, 'Stein': 12, 'Korn': 7} | {'raid': 2, 'build': 1} | {'raid': 3} | {'Holz': 6, 'Stein': 4, 'Korn': 10} | {'Holz': 7, 'Stein': 0, 'Korn': 7}
+   63 | player | 32/27/2 | 0/16 | 0/14 | {'Holz': 9, 'Stein': 12, 'Korn': 9} | {'Holz': 0, 'Stein': 12, 'Korn': 6} | {'raid': 3} | {'raid': 2, 'build': 1} | {'Holz': 0, 'Stein': 4, 'Korn': 12} | {'Holz': 9, 'Stein': 0, 'Korn': 9}
+   64 | enemy | 32/27/2 | 0/12 | 0/13 | {'Holz': 12, 'Stein': 12, 'Korn': 5} | {'Holz': 6, 'Stein': 12, 'Korn': 7} | {'raid': 3} | {'raid': 3} | {'Holz': 6, 'Stein': 4, 'Korn': 14} | {'Holz': 0, 'Stein': 0, 'Korn': 11}
+   65 | player | 33/27/1 | 0/11 | 0/14 | {'Holz': 12, 'Stein': 12, 'Korn': 5} | {'Holz': 0, 'Stein': 12, 'Korn': 9} | {'raid': 3} | {'raid': 2, 'build': 1} | {'Holz': 10, 'Stein': 4, 'Korn': 8} | {'Holz': 0, 'Stein': 0, 'Korn': 11}
+   66 | enemy | 33/27/1 | 0/12 | 0/15 | {'Holz': 12, 'Stein': 12, 'Korn': 5} | {'Holz': 6, 'Stein': 12, 'Korn': 7} | {'raid': 3} | {'raid': 3} | {'Holz': 12, 'Stein': 4, 'Korn': 9} | {'Holz': 0, 'Stein': 0, 'Korn': 13}
+   67 | player | 33/27/1 | 0/15 | 1/12 | {'Holz': 12, 'Stein': 12, 'Korn': 6} | {'Holz': 12, 'Stein': 12, 'Korn': 7} | {'raid': 3} | {'raid': 3} | {'Holz': 9, 'Stein': 4, 'Korn': 11} | {'Holz': 0, 'Stein': 0, 'Korn': 11}
+   68 | enemy | 32/28/1 | 0/12 | 1/12 | {'Holz': 12, 'Stein': 12, 'Korn': 6} | {'Holz': 12, 'Stein': 12, 'Korn': 7} | {'raid': 3} | {'raid': 3} | {'Holz': 9, 'Stein': 4, 'Korn': 11} | {'Holz': 7, 'Stein': 0, 'Korn': 9}
+   69 | player | 32/28/1 | 0/14 | 1/12 | {'Holz': 12, 'Stein': 12, 'Korn': 9} | {'Holz': 12, 'Stein': 12, 'Korn': 4} | {'raid': 3} | {'raid': 3} | {'Holz': 9, 'Stein': 4, 'Korn': 11} | {'Holz': 9, 'Stein': 0, 'Korn': 9}
+   70 | enemy | 32/28/1 | 0/15 | 1/14 | {'Holz': 12, 'Stein': 12, 'Korn': 6} | {'Holz': 12, 'Stein': 12, 'Korn': 6} | {'raid': 3} | {'raid': 2, 'fortify': 1} | {'Holz': 9, 'Stein': 4, 'Korn': 14} | {'Holz': 6, 'Stein': 0, 'Korn': 8}
+   71 | player | 32/28/1 | 0/11 | 1/14 | {'Holz': 12, 'Stein': 12, 'Korn': 5} | {'Holz': 12, 'Stein': 12, 'Korn': 8} | {'raid': 3} | {'raid': 3} | {'Holz': 10, 'Stein': 4, 'Korn': 10} | {'Holz': 6, 'Stein': 0, 'Korn': 10}
+   72 | enemy | 32/28/1 | 0/12 | 1/14 | {'Holz': 12, 'Stein': 12, 'Korn': 7} | {'Holz': 12, 'Stein': 12, 'Korn': 7} | {'raid': 3} | {'raid': 2, 'fortify': 1} | {'Holz': 12, 'Stein': 4, 'Korn': 9} | {'Holz': 6, 'Stein': 0, 'Korn': 12}
+   73 | player | 32/28/1 | 0/15 | 1/12 | {'Holz': 12, 'Stein': 12, 'Korn': 6} | {'Holz': 12, 'Stein': 12, 'Korn': 5} | {'raid': 3} | {'raid': 3} | {'Holz': 11, 'Stein': 4, 'Korn': 11} | {'Holz': 6, 'Stein': 0, 'Korn': 12}
+   74 | enemy | 32/28/1 | 0/14 | 1/13 | {'Holz': 12, 'Stein': 12, 'Korn': 6} | {'Holz': 12, 'Stein': 12, 'Korn': 6} | {'raid': 3} | {'raid': 2, 'fortify': 1} | {'Holz': 9, 'Stein': 4, 'Korn': 11} | {'Holz': 7, 'Stein': 0, 'Korn': 8}
+   75 | player | 33/28/0 | 0/7 | 0/8 | {'Holz': 12, 'Stein': 12, 'Korn': 8} | {'Holz': 0, 'Stein': 12, 'Korn': 8} | {'raid': 3} | {'raid': 2, 'build': 1} | {'Holz': 9, 'Stein': 4, 'Korn': 11} | {'Holz': 7, 'Stein': 0, 'Korn': 10}
+
+LAST 20 ACTIONS
+------------------------------------------------------------------------
+R72 | enemy | raid | class=raid_takeover | ok=True | enemy raids (3, 0) for 2 Korn. contested=20, active_from_round=75.
+R72 | enemy | fortify | class=fortify | ok=True | enemy fortifies (2, 0) for 2 Korn. raid_shield=1/3.
+R73 | player | raid | class=raid_takeover | ok=True | player raids (1, -1) for 1 Korn. contested=22, active_from_round=76.
+R73 | player | raid | class=raid_takeover | ok=True | player raids (1, 0) for 3 Korn. contested=17, active_from_round=76.
+R73 | player | raid | class=raid_takeover | ok=True | player raids (-3, 2) for 2 Korn. contested=20, active_from_round=76.
+R73 | enemy | raid | class=raid_takeover | ok=True | enemy raids (2, 1) for 3 Korn. contested=18, active_from_round=76.
+R73 | enemy | raid | class=raid_takeover | ok=True | enemy raids (2, -3) for 2 Korn. contested=12, active_from_round=76.
+R73 | enemy | raid | class=raid_takeover | ok=True | enemy raids (1, -2) for 2 Korn. contested=9, active_from_round=76.
+R74 | player | raid | class=raid_takeover | ok=True | player raids (0, 2) for 2 Korn. contested=17, active_from_round=77.
+R74 | player | raid | class=raid_absorbed | ok=True | player raids (-2, 2) for 1 Korn. raid_shield reduced from 1 to 0 by shield_damage=2 (adjacent_attackers=3), contested=20, active_from_round=77. No takeover.
+R74 | player | raid | class=raid_takeover | ok=True | player raids (-2, 3) for 3 Korn. contested=13, active_from_round=77.
+R74 | enemy | raid | class=raid_takeover | ok=True | enemy raids (-2, -1) for 1 Korn. contested=18, active_from_round=77.
+R74 | enemy | raid | class=raid_takeover | ok=True | enemy raids (-4, 2) for 3 Korn. contested=19, active_from_round=77.
+R74 | enemy | fortify | class=fortify | ok=True | enemy fortifies (-2, 2) for 2 Korn. raid_shield=1/3.
+R75 | player | raid | class=raid_takeover | ok=True | player raids (3, 0) for 1 Korn. contested=21, active_from_round=78.
+R75 | player | raid | class=raid_takeover | ok=True | player raids (-1, 0) for 1 Korn. contested=21, active_from_round=78.
+R75 | player | raid | class=raid_takeover | ok=True | player raids (2, 0) for 2 Korn. contested=17, active_from_round=78.
+R75 | enemy | raid | class=raid_takeover | ok=True | enemy raids (-3, 3) for 1 Korn. contested=18, active_from_round=78.
+R75 | enemy | raid | class=raid_takeover | ok=True | enemy raids (-3, -1) for 3 Korn. contested=17, active_from_round=78.
+R75 | enemy | build | class=build | ok=True | enemy builds Korn at (0, -4) for 12 Holz.

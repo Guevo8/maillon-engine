@@ -18,6 +18,7 @@ from src.maillon_v04.rules import (
     build_cost_holz,
     field_upgrade_cost_stein,
     raid_cost_korn,
+    territory_threshold_60,
 )
 from src.maillon_v04.state import ActorId, GameState
 
@@ -330,7 +331,61 @@ def rusher_should_save_for_build(state: GameState, actor: ActorId) -> bool:
     return True
 
 
+def rusher_finish_build_action(state: GameState, actor: ActorId) -> Action | None:
+    """
+    6H.1: Legacy-Rusher Anti-Stall-Finish.
+
+    Der alte Rusher ist absichtlich raidlastig. Auf großen Boards kann das aber
+    zu Raid-Churn führen: wenige neutrale Felder bleiben offen, obwohl ein
+    Build-Finish oder Full-Board-Finish möglich wäre.
+
+    Deshalb darf der Rusher im späten/nahen Finish Build vor Raid wählen.
+    Early-/Midgame bleibt aggressiv.
+    """
+
+    neutral = neutral_field_count(state)
+    if neutral <= 0:
+        return None
+
+    builds = affordable_build_targets(state, actor)
+    if not builds:
+        return None
+
+    actor_controlled = state.controlled_count(actor)
+    opponent_controlled = state.controlled_count(state.opponent(actor))
+    threshold = territory_threshold_60(state)
+    actor_to_threshold = threshold - actor_controlled
+
+    near_territory_finish = actor_to_threshold <= max(5, neutral + 1)
+
+    full_board_finish_lane = (
+        state.round_index >= 40
+        and neutral <= 8
+        and actor_controlled >= opponent_controlled
+    )
+
+    hard_late_stall_lane = (
+        state.round_index >= 75
+        and neutral <= 12
+        and actor_controlled >= opponent_controlled - 2
+    )
+
+    if not (near_territory_finish or full_board_finish_lane or hard_late_stall_lane):
+        return None
+
+    return Action(
+        actor=actor,
+        action_type="build",
+        target=choose_expansion_target(state, actor, builds),
+        field_type=choose_build_field_type_for_rusher(state, actor),  # type: ignore[arg-type]
+    )
+
+
 def choose_rusher_action(state: GameState, actor: ActorId) -> Action:
+    finish_build = rusher_finish_build_action(state, actor)
+    if finish_build is not None:
+        return finish_build
+
     raids = affordable_raid_targets(state, actor)
     if raids:
         return Action(
