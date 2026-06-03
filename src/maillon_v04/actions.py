@@ -18,6 +18,18 @@ from src.maillon_v04.rules import (
     rebuild_cost_holz,
     winner_by_territory,
 )
+from src.maillon_v04.tunnel_actions import (
+    TunnelAction,
+    affordable_repair_build_targets as affordable_tunnel_repair_build_targets,
+    affordable_tunnel_entrance_targets,
+    affordable_tunnel_extend_targets,
+    affordable_tunnel_raid_targets,
+    apply_tunnel_action as apply_isolated_tunnel_action,
+    repair_build_targets as tunnel_repair_build_targets,
+    tunnel_entrance_targets,
+    tunnel_extend_targets,
+    tunnel_raid_targets,
+)
 
 
 ActionType = Literal[
@@ -27,10 +39,20 @@ ActionType = Literal[
     "field_upgrade",
     "core_upgrade",
     "fortify",
+    "tunnel_entrance",
+    "tunnel_extend",
+    "tunnel_raid",
+    "repair_build",
     "wait",
 ]
 
 BuildFieldType = Literal["Holz", "Stein", "Korn"]
+TUNNEL_ACTION_TYPES = {
+    "tunnel_entrance",
+    "tunnel_extend",
+    "tunnel_raid",
+    "repair_build",
+}
 
 
 @dataclass(frozen=True)
@@ -39,6 +61,7 @@ class Action:
     action_type: ActionType
     target: Coord | None = None
     field_type: BuildFieldType | None = None
+    source: Coord | None = None
 
 
 @dataclass(frozen=True)
@@ -47,6 +70,7 @@ class ActionResult:
     action: Action
     message: str
     winner: ActorId | None = None
+    collapsed: tuple[Coord, ...] = ()
 
 
 def build_targets(state: GameState, actor: ActorId) -> list[Coord]:
@@ -58,7 +82,9 @@ def build_targets(state: GameState, actor: ActorId) -> list[Coord]:
 
     for origin in state.active_owned_cells(actor):
         for neighbor in state.board.neighbors(origin):
-            if state.cell(neighbor).owner is None:
+            cell = state.cell(neighbor)
+
+            if cell.owner is None and not cell.collapsed:
                 targets.add(neighbor)
 
     return sorted(targets)
@@ -77,6 +103,9 @@ def raid_targets(state: GameState, actor: ActorId) -> list[Coord]:
             cell = state.cell(neighbor)
 
             if cell.owner != enemy:
+                continue
+
+            if cell.collapsed:
                 continue
 
             if cell.is_core:
@@ -100,6 +129,9 @@ def rebuild_targets(state: GameState, actor: ActorId) -> list[Coord]:
     for coord in state.active_owned_cells(actor):
         cell = state.cell(coord)
 
+        if cell.collapsed:
+            continue
+
         if cell.is_core:
             continue
 
@@ -118,6 +150,9 @@ def field_upgrade_targets(state: GameState, actor: ActorId) -> list[Coord]:
 
     for coord in state.active_owned_cells(actor):
         cell = state.cell(coord)
+
+        if cell.collapsed:
+            continue
 
         if cell.is_core:
             continue
@@ -138,6 +173,9 @@ def fortify_targets(state: GameState, actor: ActorId) -> list[Coord]:
     for coord in state.active_owned_cells(actor):
         cell = state.cell(coord)
 
+        if cell.collapsed:
+            continue
+
         if cell.is_core:
             continue
 
@@ -157,6 +195,9 @@ def core_upgrade_targets(state: GameState, actor: ActorId) -> list[Coord]:
     cell = state.cell(core)
 
     if cell.owner != actor:
+        return []
+
+    if cell.collapsed:
         return []
 
     if not cell.is_core:
@@ -241,6 +282,14 @@ def action_summary(state: GameState, actor: ActorId) -> dict[str, int]:
         "affordable_core_upgrade_targets": len(affordable_core_upgrade_targets(state, actor)),
         "fortify_targets": len(fortify_targets(state, actor)),
         "affordable_fortify_targets": len(affordable_fortify_targets(state, actor)),
+        "tunnel_entrance_targets": len(tunnel_entrance_targets(state, actor)),
+        "affordable_tunnel_entrance_targets": len(affordable_tunnel_entrance_targets(state, actor)),
+        "tunnel_extend_targets": len(tunnel_extend_targets(state, actor)),
+        "affordable_tunnel_extend_targets": len(affordable_tunnel_extend_targets(state, actor)),
+        "tunnel_raid_targets": len(tunnel_raid_targets(state, actor)),
+        "affordable_tunnel_raid_targets": len(affordable_tunnel_raid_targets(state, actor)),
+        "repair_build_targets": len(tunnel_repair_build_targets(state, actor)),
+        "affordable_repair_build_targets": len(affordable_tunnel_repair_build_targets(state, actor)),
     }
 
 
@@ -285,6 +334,9 @@ def apply_action(state: GameState, action: Action) -> ActionResult:
             winner=winner_by_territory(state),
         )
 
+    if action.action_type in TUNNEL_ACTION_TYPES:
+        return apply_tunnel_action_from_main(state, action)
+
     if action.action_type == "build":
         return apply_build(state, action)
 
@@ -308,6 +360,25 @@ def apply_action(state: GameState, action: Action) -> ActionResult:
         action=action,
         message=f"unknown action type: {action.action_type}",
         winner=winner_by_territory(state),
+    )
+
+
+def apply_tunnel_action_from_main(state: GameState, action: Action) -> ActionResult:
+    tunnel_action = TunnelAction(
+        actor=action.actor,
+        action_type=action.action_type,  # type: ignore[arg-type]
+        target=action.target,
+        source=action.source,
+        field_type=action.field_type,
+    )
+    result = apply_isolated_tunnel_action(state, tunnel_action)
+
+    return ActionResult(
+        ok=result.ok,
+        action=action,
+        message=result.message,
+        winner=result.winner,
+        collapsed=result.collapsed,
     )
 
 
@@ -371,6 +442,9 @@ def adjacent_attacker_field_count(
         cell = state.cell(neighbor)
 
         if cell.owner != actor:
+            continue
+
+        if cell.collapsed:
             continue
 
         if not state.is_active(neighbor):
