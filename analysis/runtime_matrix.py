@@ -53,6 +53,17 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--timeout-majority-margin",
+        type=int,
+        default=5,
+        help=(
+            "If max_rounds is reached without a winner, award timeout_majority "
+            "to the controlled-field leader when the margin is at least this value. "
+            "Use 0 to disable timeout adjudication."
+        ),
+    )
+
+    parser.add_argument(
         "--out",
         default="analysis/reports/runtime_matrix.csv",
         help="CSV output path.",
@@ -67,6 +78,37 @@ def is_absorb(message: str) -> bool:
 
 def neutral_field_count(engine: GameEngine) -> int:
     return sum(1 for cell in engine.state.cells.values() if cell.owner is None)
+
+
+def timeout_adjudication(
+    engine: GameEngine,
+    *,
+    margin: int,
+) -> tuple[str | None, str, int]:
+    """
+    Analysis-only max-round adjudication.
+
+    This does not change engine rules. It only classifies runtime-matrix rows
+    that reached max_rounds without a normal winner.
+
+    If one actor leads by at least `margin` controlled fields, the matrix marks
+    that actor as timeout_majority. Otherwise the row remains a timeout_draw.
+    """
+
+    if margin <= 0:
+        return None, "none", 0
+
+    player_controlled = engine.state.controlled_count("player")
+    enemy_controlled = engine.state.controlled_count("enemy")
+    diff = player_controlled - enemy_controlled
+
+    if abs(diff) < margin:
+        return None, "timeout_draw", diff
+
+    if diff > 0:
+        return "player", "timeout_majority", diff
+
+    return "enemy", "timeout_majority", diff
 
 
 def win_reason(engine: GameEngine, winner: str | None) -> str:
@@ -106,6 +148,7 @@ def run_matchup(
     enemy_policy: str,
     max_rounds: int,
     actions_per_turn: int,
+    timeout_majority_margin: int,
 ) -> dict[str, int | str]:
     engine = GameEngine.new_game(
         GameConfig(
@@ -165,7 +208,19 @@ def run_matchup(
             break
 
     state = engine.state
-    winner = engine.current_winner()
+    natural_winner = engine.current_winner()
+    natural_reason = win_reason(engine, natural_winner)
+    timeout_diff = 0
+
+    if natural_winner is None:
+        winner, reason, timeout_diff = timeout_adjudication(
+            engine,
+            margin=timeout_majority_margin,
+        )
+    else:
+        winner = natural_winner
+        reason = natural_reason
+
     shield_stats = final_shield_stats(engine)
 
     row: dict[str, int | str] = {
@@ -175,7 +230,11 @@ def run_matchup(
         "player_policy": player_policy,
         "enemy_policy": enemy_policy,
         "winner": winner or "",
-        "win_reason": win_reason(engine, winner),
+        "win_reason": reason,
+        "natural_winner": natural_winner or "",
+        "natural_win_reason": natural_reason,
+        "timeout_margin": timeout_majority_margin,
+        "timeout_controlled_diff": timeout_diff,
         "final_round": state.round_index,
         "threshold_60": territory_threshold_60(state),
         "player_first_rounds": first_actor_counts["player"],
@@ -228,6 +287,7 @@ def run_matrix(
     policies: Iterable[str],
     max_rounds: int,
     actions_per_turn: int,
+    timeout_majority_margin: int,
 ) -> list[dict[str, int | str]]:
     rows: list[dict[str, int | str]] = []
     policy_list = list(policies)
@@ -242,6 +302,7 @@ def run_matrix(
                         enemy_policy=enemy_policy,
                         max_rounds=max_rounds,
                         actions_per_turn=actions_per_turn,
+                        timeout_majority_margin=timeout_majority_margin,
                     )
                 )
 
@@ -260,21 +321,37 @@ def write_csv(path: Path, rows: list[dict[str, int | str]]) -> None:
         writer.writerows(rows)
 
 
-def print_summary(rows: list[dict[str, int | str]]) -> None:
-    print(
-        "board,matchup,winner,reason,round,p/e/n,"
-        "fortify,absorbed,takeovers,rebuild,p_rebuild,e_rebuild,"
-        "p_korn_waste,e_korn_waste,shield_points"
+def main() -> None:
+    args = parse_args()
+    rows = run_matrix(
+        side_lengths=args.side_lengths,
+        policies=args.policies,
+        max_rounds=args.max_rounds,
+        actions_per_turn=args.actions_per_turn,
+        timeout_majority_margin=args.timeout_majority_margin,
     )
 
+    out_path = Path(args.out)
+    write_csv(out_path, rows)
+
+    print(f"Wrote {out_path} with {len(rows)} rows")
+
+    print(
+        "board,matchup,winner,reason,natural_winner,natural_reason,round,p/e/n,"
+        "timeout_diff,fortify,absorbed,takeovers,rebuild,p_rebuild,e_rebuild,"
+        "p_korn_waste,e_korn_waste,shield_points"
+    )
     for row in rows:
         print(
             f"{row['board_size']},"
             f"{row['matchup']},"
             f"{row['winner']},"
             f"{row['win_reason']},"
+            f"{row['natural_winner']},"
+            f"{row['natural_win_reason']},"
             f"{row['final_round']},"
             f"{row['p_controlled']}/{row['e_controlled']}/{row['neutral_fields']},"
+            f"{row['timeout_controlled_diff']},"
             f"{row['fortify']},"
             f"{row['raid_absorbed_by_shield']},"
             f"{row['raid_takeovers']},"
@@ -285,23 +362,6 @@ def print_summary(rows: list[dict[str, int | str]]) -> None:
             f"{row['e_korn_waste']},"
             f"{row['final_shield_points']}"
         )
-
-
-def main() -> None:
-    args = parse_args()
-
-    rows = run_matrix(
-        side_lengths=args.side_lengths,
-        policies=args.policies,
-        max_rounds=args.max_rounds,
-        actions_per_turn=args.actions_per_turn,
-    )
-
-    out = Path(args.out)
-    write_csv(out, rows)
-
-    print(f"Wrote {out} with {len(rows)} rows")
-    print_summary(rows)
 
 
 if __name__ == "__main__":
