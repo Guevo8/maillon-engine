@@ -14,6 +14,11 @@ TUNNEL_EXTEND_COSTS: dict[ResourceName, int] = {
     "Stein": 1,
 }
 
+REPAIR_BUILD_COSTS: dict[ResourceName, int] = {
+    "Holz": 2,
+    "Stein": 2,
+}
+
 
 def tunnel_entrance_cost(state: GameState, actor: ActorId) -> dict[ResourceName, int]:
     """
@@ -49,3 +54,15 @@ def tunnel_raid_cost(state: GameState, actor: ActorId) -> dict[ResourceName, int
     _ = state
     _ = actor
     return {"Korn": TUNNEL_RAID_KORN_COST}
+
+
+def repair_build_cost(state: GameState, actor: ActorId) -> dict[ResourceName, int]:
+    """
+    Cost for repairing, claiming and rebuilding one collapsed field.
+
+    The parameters are accepted for future scaling / scenario rules.
+    """
+
+    _ = state
+    _ = actor
+    return dict(REPAIR_BUILD_COSTS)
