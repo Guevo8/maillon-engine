@@ -53,9 +53,9 @@ ACTION_PRIORITY: tuple[str, ...] = (
 
 FIELD_VALUE: dict[str | None, float] = {
     "Core": 12.0,
-    "Stein": 8.0,
-    "Korn": 7.0,
-    "Holz": 6.0,
+    "Stein": 7.0,
+    "Korn": 7.5,
+    "Holz": 7.0,
     "leer": 0.0,
     None: 0.0,
 }
@@ -207,13 +207,17 @@ def score_build(state: GameState, actor: ActorId, action: Action) -> tuple[float
     need = resource_need(state, actor, field_type)
     enemy_core_closeness = distance_closeness_to_enemy_core(state, actor, target)
 
-    raw = 8.0
-    raw += 10.0 * need
-    raw += 4.0 * neighbors["own"]
-    raw += 3.0 * neighbors["enemy"]
-    raw += 6.0 * enemy_core_closeness
-    raw += FIELD_VALUE[field_type] * 0.5
-    raw -= cost * 1.2
+    neutral_remaining = sum(1 for cell in state.cells.values() if cell.owner is None)
+    board_fill_pressure = 1.0 - clamp(neutral_remaining / state.board.size)
+
+    raw = 10.0
+    raw += 12.0 * need
+    raw += 4.5 * neighbors["own"]
+    raw += 3.5 * neighbors["enemy"]
+    raw += 8.0 * enemy_core_closeness
+    raw += 6.0 * board_fill_pressure
+    raw += FIELD_VALUE[field_type] * 0.45
+    raw -= cost * 1.35
 
     return max(raw, 0.0), (
         f"type={field_type}",
@@ -244,8 +248,8 @@ def score_raid(state: GameState, actor: ActorId, action: Action) -> tuple[float,
     raw -= cost * 2.2
 
     if shield > 0:
-        raw -= shield * 8.0
-        raw += 4.0  # shield removal still has tactical value
+        raw -= shield * 13.0
+        raw += 2.0  # shield removal still has tactical value, but should not dominate
 
     return max(raw, 0.0), (
         f"target_type={cell.field_type}",
@@ -271,10 +275,10 @@ def score_fortify(state: GameState, actor: ActorId, action: Action) -> tuple[flo
     raw += FIELD_VALUE[cell.field_type] * 0.5
     raw += own_core_closeness * 4.0
     raw += max(0, 3 - cell.raid_shield) * 2.0
-    raw -= cost * 1.3
+    raw -= cost * 1.8
 
     if neighbors["enemy"] == 0 and cell.contested_count == 0:
-        raw *= 0.35
+        raw *= 0.12
 
     return max(raw, 0.0), (
         f"type={cell.field_type}",
@@ -367,7 +371,7 @@ def score_wait(state: GameState, actor: ActorId, action: Action) -> tuple[float,
     _ = actor
     _ = action
 
-    return 1.0, ("fallback",)
+    return 0.05, ("fallback",)
 
 
 def score_action(
