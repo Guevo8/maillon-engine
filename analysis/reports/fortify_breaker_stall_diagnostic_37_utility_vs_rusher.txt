@@ -1,0 +1,136 @@
+FORTIFY BREAKER STALL DIAGNOSTIC
+========================================================================
+Case: board=37 | player=utility_balancer | enemy=rusher | max_rounds=120
+
+FINAL
+------------------------------------------------------------------------
+Round:        121
+Winner:       None
+Reason:       none
+Threshold 60: 23
+Controlled:   player 3 | enemy 19 | neutral 15
+Non-core:     player 2 | enemy 18
+
+FINAL RESOURCES
+------------------------------------------------------------------------
+Player: {'Holz': 1, 'Stein': 12, 'Korn': 3} / caps {'Holz': 12, 'Stein': 12, 'Korn': 12}
+Enemy:  {'Holz': 1, 'Stein': 12, 'Korn': 10} / caps {'Holz': 12, 'Stein': 12, 'Korn': 12}
+Enemy build cost now: 8
+Enemy can build now:  False
+
+ACTION COUNTS
+------------------------------------------------------------------------
+Total:  {'build': 18, 'fortify': 55, 'wait': 302, 'field_upgrade': 20, 'raid': 136, 'core_upgrade': 2, 'rebuild': 187}
+Player: {'build': 9, 'fortify': 55, 'wait': 251, 'field_upgrade': 5, 'core_upgrade': 1, 'raid': 38, 'rebuild': 1}
+Enemy:  {'build': 9, 'wait': 51, 'raid': 98, 'rebuild': 186, 'field_upgrade': 15, 'core_upgrade': 1}
+Raid takeovers: 84
+Raid absorbed:  52
+
+WASTE TOTAL
+------------------------------------------------------------------------
+Player: {'Holz': 0, 'Stein': 26, 'Korn': 4}
+Enemy:  {'Holz': 0, 'Stein': 346, 'Korn': 2446}
+
+FIELD COUNTS
+------------------------------------------------------------------------
+('enemy', 'Core'): 1
+('enemy', 'Holz'): 2
+('enemy', 'Korn'): 13
+('enemy', 'Stein'): 3
+('neutral', 'leer'): 15
+('player', 'Core'): 1
+('player', 'Korn'): 2
+
+FRONT / SHIELD STATS
+------------------------------------------------------------------------
+Player front: {'front_fields': 2, 'shielded_front': 0, 'total_front_shield': 0, 'contested_front': 2}
+Enemy front:  {'front_fields': 5, 'shielded_front': 0, 'total_front_shield': 0, 'contested_front': 5}
+Shielded fields total: 0
+Shield points total:   0
+Contested fields:      10
+
+TOP SHIELDED FIELDS
+------------------------------------------------------------------------
+
+TOP CONTESTED FIELDS
+------------------------------------------------------------------------
+(-2, 0) owner=player type=Korn L2 shield=0 contested=39 active=False active_from=122
+(-3, 1) owner=enemy type=Stein L2 shield=0 contested=38 active=True active_from=121
+(-2, -1) owner=player type=Korn L2 shield=0 contested=34 active=False active_from=123
+(-1, -1) owner=enemy type=Korn L2 shield=0 contested=8 active=True active_from=33
+(-1, 0) owner=enemy type=Korn L2 shield=0 contested=7 active=True active_from=27
+(-2, 1) owner=enemy type=Stein L2 shield=0 contested=4 active=True active_from=29
+(-1, -2) owner=enemy type=Stein L2 shield=0 contested=2 active=True active_from=23
+(0, -1) owner=enemy type=Korn L2 shield=0 contested=2 active=True active_from=12
+(-3, 2) owner=enemy type=Korn L2 shield=0 contested=1 active=True active_from=121
+(-2, 2) owner=enemy type=Korn L2 shield=0 contested=1 active=True active_from=7
+
+LAST 20 ROUNDS
+------------------------------------------------------------------------
+round | p/e/n | enemy_can_build | enemy_build_cost | p_res | e_res | p_actions | e_actions | p_waste | e_waste
+  101 | 3/19/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 0} | {'Holz': 1, 'Stein': 12, 'Korn': 12} | {'raid': 1, 'wait': 2} | {'rebuild': 2, 'wait': 1} | {'Holz': 0, 'Stein': 0, 'Korn': 0} | {'Holz': 0, 'Stein': 4, 'Korn': 27}
+  102 | 3/19/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 3} | {'Holz': 1, 'Stein': 12, 'Korn': 10} | {'wait': 3} | {'raid': 1, 'rebuild': 2} | {'Holz': 0, 'Stein': 0, 'Korn': 0} | {'Holz': 0, 'Stein': 4, 'Korn': 27}
+  103 | 4/18/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 1} | {'Holz': 1, 'Stein': 12, 'Korn': 12} | {'raid': 1, 'wait': 2} | {'rebuild': 2, 'wait': 1} | {'Holz': 0, 'Stein': 0, 'Korn': 0} | {'Holz': 0, 'Stein': 6, 'Korn': 25}
+  104 | 3/19/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 4} | {'Holz': 1, 'Stein': 12, 'Korn': 11} | {'wait': 3} | {'raid': 1, 'rebuild': 2} | {'Holz': 0, 'Stein': 0, 'Korn': 0} | {'Holz': 0, 'Stein': 4, 'Korn': 27}
+  105 | 3/19/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 1} | {'Holz': 1, 'Stein': 12, 'Korn': 10} | {'fortify': 2, 'wait': 1} | {'raid': 1, 'rebuild': 2} | {'Holz': 0, 'Stein': 0, 'Korn': 0} | {'Holz': 0, 'Stein': 4, 'Korn': 26}
+  106 | 2/20/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 2} | {'Holz': 1, 'Stein': 12, 'Korn': 10} | {'wait': 3} | {'raid': 1, 'rebuild': 2} | {'Holz': 0, 'Stein': 2, 'Korn': 0} | {'Holz': 0, 'Stein': 4, 'Korn': 25}
+  107 | 3/19/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 0} | {'Holz': 1, 'Stein': 12, 'Korn': 12} | {'raid': 1, 'wait': 2} | {'rebuild': 2, 'wait': 1} | {'Holz': 0, 'Stein': 0, 'Korn': 0} | {'Holz': 0, 'Stein': 4, 'Korn': 27}
+  108 | 3/19/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 3} | {'Holz': 1, 'Stein': 12, 'Korn': 10} | {'wait': 3} | {'raid': 1, 'rebuild': 2} | {'Holz': 0, 'Stein': 0, 'Korn': 0} | {'Holz': 0, 'Stein': 4, 'Korn': 27}
+  109 | 4/18/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 1} | {'Holz': 1, 'Stein': 12, 'Korn': 12} | {'raid': 1, 'wait': 2} | {'rebuild': 2, 'wait': 1} | {'Holz': 0, 'Stein': 0, 'Korn': 0} | {'Holz': 0, 'Stein': 6, 'Korn': 25}
+  110 | 3/19/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 4} | {'Holz': 1, 'Stein': 12, 'Korn': 11} | {'wait': 3} | {'raid': 1, 'rebuild': 2} | {'Holz': 0, 'Stein': 0, 'Korn': 0} | {'Holz': 0, 'Stein': 4, 'Korn': 27}
+  111 | 3/19/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 1} | {'Holz': 1, 'Stein': 12, 'Korn': 10} | {'fortify': 2, 'wait': 1} | {'raid': 1, 'rebuild': 2} | {'Holz': 0, 'Stein': 0, 'Korn': 0} | {'Holz': 0, 'Stein': 4, 'Korn': 26}
+  112 | 2/20/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 2} | {'Holz': 1, 'Stein': 12, 'Korn': 10} | {'wait': 3} | {'raid': 1, 'rebuild': 2} | {'Holz': 0, 'Stein': 2, 'Korn': 0} | {'Holz': 0, 'Stein': 4, 'Korn': 25}
+  113 | 3/19/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 0} | {'Holz': 1, 'Stein': 12, 'Korn': 12} | {'raid': 1, 'wait': 2} | {'rebuild': 2, 'wait': 1} | {'Holz': 0, 'Stein': 0, 'Korn': 0} | {'Holz': 0, 'Stein': 4, 'Korn': 27}
+  114 | 3/19/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 3} | {'Holz': 1, 'Stein': 12, 'Korn': 10} | {'wait': 3} | {'raid': 1, 'rebuild': 2} | {'Holz': 0, 'Stein': 0, 'Korn': 0} | {'Holz': 0, 'Stein': 4, 'Korn': 27}
+  115 | 4/18/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 1} | {'Holz': 1, 'Stein': 12, 'Korn': 12} | {'raid': 1, 'wait': 2} | {'rebuild': 2, 'wait': 1} | {'Holz': 0, 'Stein': 0, 'Korn': 0} | {'Holz': 0, 'Stein': 6, 'Korn': 25}
+  116 | 3/19/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 4} | {'Holz': 1, 'Stein': 12, 'Korn': 11} | {'wait': 3} | {'raid': 1, 'rebuild': 2} | {'Holz': 0, 'Stein': 0, 'Korn': 0} | {'Holz': 0, 'Stein': 4, 'Korn': 27}
+  117 | 3/19/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 1} | {'Holz': 1, 'Stein': 12, 'Korn': 10} | {'fortify': 2, 'wait': 1} | {'raid': 1, 'rebuild': 2} | {'Holz': 0, 'Stein': 0, 'Korn': 0} | {'Holz': 0, 'Stein': 4, 'Korn': 26}
+  118 | 2/20/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 2} | {'Holz': 1, 'Stein': 12, 'Korn': 10} | {'wait': 3} | {'raid': 1, 'rebuild': 2} | {'Holz': 0, 'Stein': 2, 'Korn': 0} | {'Holz': 0, 'Stein': 4, 'Korn': 25}
+  119 | 3/19/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 0} | {'Holz': 1, 'Stein': 12, 'Korn': 12} | {'raid': 1, 'wait': 2} | {'rebuild': 2, 'wait': 1} | {'Holz': 0, 'Stein': 0, 'Korn': 0} | {'Holz': 0, 'Stein': 4, 'Korn': 27}
+  120 | 3/19/15 | False | 8 | {'Holz': 1, 'Stein': 12, 'Korn': 3} | {'Holz': 1, 'Stein': 12, 'Korn': 10} | {'wait': 3} | {'raid': 1, 'rebuild': 2} | {'Holz': 0, 'Stein': 0, 'Korn': 0} | {'Holz': 0, 'Stein': 4, 'Korn': 27}
+
+LAST 20 ENEMY/RUSHER ACTIONS
+------------------------------------------------------------------------
+R114 | rebuild | ok=True | enemy rebuilds (-3, 2): Holz -> Korn for 2 Holz.
+R114 | rebuild | ok=True | enemy rebuilds (-3, 3): Korn -> Holz for 2 Holz.
+R115 | rebuild | ok=True | enemy rebuilds (-3, 2): Korn -> Holz for 2 Holz.
+R115 | rebuild | ok=True | enemy rebuilds (-3, 3): Holz -> Korn for 2 Holz.
+R115 | wait | ok=True | enemy waits.
+R116 | raid | ok=True | enemy raids (-2, 0) for 1 Korn. contested=38, active_from_round=119.
+R116 | rebuild | ok=True | enemy rebuilds (-3, 2): Holz -> Korn for 2 Holz.
+R116 | rebuild | ok=True | enemy rebuilds (-3, 3): Korn -> Holz for 2 Holz.
+R117 | raid | ok=True | enemy raids (-2, -1) for 2 Korn. raid_shield reduced from 2 to 1 by shield_damage=1 (adjacent_attackers=2), contested=33, active_from_round=120. No takeover.
+R117 | rebuild | ok=True | enemy rebuilds (-3, 2): Korn -> Holz for 2 Holz.
+R117 | rebuild | ok=True | enemy rebuilds (-3, 3): Holz -> Korn for 2 Holz.
+R118 | raid | ok=True | enemy raids (-3, 1) for 2 Korn. contested=38, active_from_round=121.
+R118 | rebuild | ok=True | enemy rebuilds (-3, 2): Holz -> Korn for 2 Holz.
+R118 | rebuild | ok=True | enemy rebuilds (-3, 3): Korn -> Holz for 2 Holz.
+R119 | rebuild | ok=True | enemy rebuilds (-3, 2): Korn -> Holz for 2 Holz.
+R119 | rebuild | ok=True | enemy rebuilds (-3, 3): Holz -> Korn for 2 Holz.
+R119 | wait | ok=True | enemy waits.
+R120 | raid | ok=True | enemy raids (-2, -1) for 2 Korn. raid_shield reduced from 1 to 0 by shield_damage=1 (adjacent_attackers=2), contested=34, active_from_round=123. No takeover.
+R120 | rebuild | ok=True | enemy rebuilds (-3, 2): Holz -> Korn for 2 Holz.
+R120 | rebuild | ok=True | enemy rebuilds (-3, 3): Korn -> Holz for 2 Holz.
+
+LAST 20 ALL ACTIONS
+------------------------------------------------------------------------
+R117 | enemy | rebuild | ok=True | enemy rebuilds (-3, 2): Korn -> Holz for 2 Holz.
+R117 | enemy | rebuild | ok=True | enemy rebuilds (-3, 3): Holz -> Korn for 2 Holz.
+R118 | player | wait | ok=True | player waits.
+R118 | player | wait | ok=True | player waits.
+R118 | player | wait | ok=True | player waits.
+R118 | enemy | raid | ok=True | enemy raids (-3, 1) for 2 Korn. contested=38, active_from_round=121.
+R118 | enemy | rebuild | ok=True | enemy rebuilds (-3, 2): Holz -> Korn for 2 Holz.
+R118 | enemy | rebuild | ok=True | enemy rebuilds (-3, 3): Korn -> Holz for 2 Holz.
+R119 | player | raid | ok=True | player raids (-2, 0) for 3 Korn. contested=39, active_from_round=122.
+R119 | player | wait | ok=True | player waits.
+R119 | player | wait | ok=True | player waits.
+R119 | enemy | rebuild | ok=True | enemy rebuilds (-3, 2): Korn -> Holz for 2 Holz.
+R119 | enemy | rebuild | ok=True | enemy rebuilds (-3, 3): Holz -> Korn for 2 Holz.
+R119 | enemy | wait | ok=True | enemy waits.
+R120 | player | wait | ok=True | player waits.
+R120 | player | wait | ok=True | player waits.
+R120 | player | wait | ok=True | player waits.
+R120 | enemy | raid | ok=True | enemy raids (-2, -1) for 2 Korn. raid_shield reduced from 1 to 0 by shield_damage=1 (adjacent_attackers=2), contested=34, active_from_round=123. No takeover.
+R120 | enemy | rebuild | ok=True | enemy rebuilds (-3, 2): Holz -> Korn for 2 Holz.
+R120 | enemy | rebuild | ok=True | enemy rebuilds (-3, 3): Korn -> Holz for 2 Holz.
