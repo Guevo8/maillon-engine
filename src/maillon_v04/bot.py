@@ -4,6 +4,7 @@ from typing import Literal
 
 from src.maillon_v04.bot_utility import choose_best_utility_action
 from src.maillon_v04.bot_personality import BotPersonality, PERSONALITY_IDS
+from src.maillon_v04.bot_tunnel_probe import choose_tunnel_probe_action
 from src.maillon_v04.actions import (
     Action,
     affordable_build_targets,
@@ -32,6 +33,7 @@ BotPolicy = Literal[
     "utility_fortifier",
     "utility_aggro_turtle",
     "utility_opportunist",
+    "tunnel_probe",
 ]
 
 UTILITY_POLICY_TO_PERSONALITY: dict[str, BotPersonality] = {
@@ -543,6 +545,9 @@ def choose_bot_action(
 
     if policy == "phase_player":
         return choose_phase_player_action(state, actor)
+
+    if policy == "tunnel_probe":
+        return choose_tunnel_probe_action(state, actor)
 
     personality = utility_personality_for_policy(policy)
     if personality is not None:
