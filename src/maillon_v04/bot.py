@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Literal
 
 from src.maillon_v04.bot_utility import choose_best_utility_action
+from src.maillon_v04.bot_personality import BotPersonality, PERSONALITY_IDS
 from src.maillon_v04.actions import (
     Action,
     affordable_build_targets,
@@ -21,7 +22,25 @@ from src.maillon_v04.rules import (
 from src.maillon_v04.state import ActorId, GameState
 
 
-BotPolicy = Literal["rusher", "phase_player", "utility_balancer"]
+BotPolicy = Literal[
+    "rusher",
+    "phase_player",
+    "utility_balancer",
+    "utility_rusher",
+    "utility_economist",
+    "utility_fortifier",
+    "utility_aggro_turtle",
+    "utility_opportunist",
+]
+
+UTILITY_POLICY_TO_PERSONALITY: dict[str, BotPersonality] = {
+    f"utility_{personality}": personality
+    for personality in PERSONALITY_IDS
+}
+
+
+def utility_personality_for_policy(policy: str) -> BotPersonality | None:
+    return UTILITY_POLICY_TO_PERSONALITY.get(policy)
 
 
 def actor_core(state: GameState, actor: ActorId) -> Coord:
@@ -361,6 +380,7 @@ def choose_rusher_action(state: GameState, actor: ActorId) -> Action:
 
     return Action(actor=actor, action_type="wait")
 
+
 def choose_phase_player_action(state: GameState, actor: ActorId) -> Action:
     """
     Normalerer Referenzbot.
@@ -469,11 +489,12 @@ def choose_bot_action(
     if policy == "phase_player":
         return choose_phase_player_action(state, actor)
 
-    if policy == "utility_balancer":
+    personality = utility_personality_for_policy(policy)
+    if personality is not None:
         return choose_best_utility_action(
             state=state,
             actor=actor,
-            personality="balancer",
+            personality=personality,
         )
 
     raise ValueError(f"Unknown bot policy: {policy}")
