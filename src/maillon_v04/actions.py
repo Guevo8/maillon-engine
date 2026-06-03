@@ -353,6 +353,53 @@ def apply_build(state: GameState, action: Action) -> ActionResult:
     )
 
 
+def adjacent_attacker_field_count(
+    state: GameState,
+    actor: ActorId,
+    target: Coord,
+) -> int:
+    """
+    Anzahl aktiver eigener Felder, die an das Raid-Ziel angrenzen.
+
+    Diese Zahl wird für den Fortify-Breaker genutzt.
+    Nur aktive Felder zählen als echte Angriffsanker.
+    """
+
+    count = 0
+
+    for neighbor in state.board.neighbors(target):
+        cell = state.cell(neighbor)
+
+        if cell.owner != actor:
+            continue
+
+        if not state.is_active(neighbor):
+            continue
+
+        count += 1
+
+    return count
+
+
+def raid_shield_damage_by_adjacent_attackers(adjacent_attackers: int) -> int:
+    """
+    Fortify-Breaker v0.5 experiment:
+
+    1 angrenzendes Angreiferfeld  -> 1 Shield Damage
+    2 angrenzende Angreiferfelder -> 1 Shield Damage
+    3 angrenzende Angreiferfelder -> 2 Shield Damage
+    4+ angrenzende Angreiferfelder -> 3 Shield Damage
+    """
+
+    if adjacent_attackers >= 4:
+        return 3
+
+    if adjacent_attackers >= 3:
+        return 2
+
+    return 1
+
+
 def apply_raid(state: GameState, action: Action) -> ActionResult:
     actor = action.actor
     target = action.target
@@ -381,7 +428,11 @@ def apply_raid(state: GameState, action: Action) -> ActionResult:
     cell = state.cell(target)
 
     if cell.raid_shield > 0:
-        cell.raid_shield -= 1
+        adjacent_attackers = adjacent_attacker_field_count(state, actor, target)
+        shield_damage = raid_shield_damage_by_adjacent_attackers(adjacent_attackers)
+        old_shield = cell.raid_shield
+
+        cell.raid_shield = max(0, cell.raid_shield - shield_damage)
         cell.contested_count += 1
 
         cooldown = min(3, cell.contested_count)
@@ -392,7 +443,9 @@ def apply_raid(state: GameState, action: Action) -> ActionResult:
             action=action,
             message=(
                 f"{actor} raids {target} for {cost} Korn. "
-                f"raid_shield reduced to {cell.raid_shield}, "
+                f"raid_shield reduced from {old_shield} to {cell.raid_shield} "
+                f"by shield_damage={shield_damage} "
+                f"(adjacent_attackers={adjacent_attackers}), "
                 f"contested={cell.contested_count}, active_from_round={cell.active_from_round}. "
                 "No takeover."
             ),
