@@ -15,7 +15,7 @@ from src.maillon_v04.engine import ActorTurnResult, GameConfig, GameEngine
 from src.maillon_v04.rules import territory_threshold_60
 
 
-POLICIES: tuple[BotPolicy, ...] = ("phase_player", "rusher")
+POLICIES: tuple[BotPolicy, ...] = ("phase_player", "rusher", "utility_balancer")
 RESOURCES = ("Holz", "Stein", "Korn")
 TurnOrder = Literal["player_first", "enemy_first"]
 
