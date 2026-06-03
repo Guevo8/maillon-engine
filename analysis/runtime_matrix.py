@@ -12,15 +12,22 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.maillon_v04.engine import GameConfig, GameEngine
 from src.maillon_v04.rules import territory_threshold_60
+from src.maillon_v04.tunnels import tunnel_components, tunnel_pressure
 
 
 DEFAULT_POLICIES = ("phase_player", "rusher", "utility_balancer")
 RESOURCES = ("Holz", "Stein", "Korn")
+TUNNEL_ACTIONS = (
+    "tunnel_entrance",
+    "tunnel_extend",
+    "tunnel_raid",
+    "repair_build",
+)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run Maillon v0.5 bot-vs-bot runtime matrix."
+        description="Run Maillon v0.6 bot-vs-bot runtime matrix."
     )
 
     parser.add_argument(
@@ -77,7 +84,11 @@ def is_absorb(message: str) -> bool:
 
 
 def neutral_field_count(engine: GameEngine) -> int:
-    return sum(1 for cell in engine.state.cells.values() if cell.owner is None)
+    return sum(
+        1
+        for cell in engine.state.cells.values()
+        if cell.owner is None and not cell.collapsed
+    )
 
 
 def timeout_adjudication(
@@ -141,6 +152,31 @@ def final_shield_stats(engine: GameEngine) -> dict[str, int]:
     }
 
 
+def final_tunnel_stats(engine: GameEngine) -> dict[str, int]:
+    state = engine.state
+    pressures = [tunnel_pressure(state, coord) for coord in state.board.cells]
+    components = tunnel_components(state)
+
+    return {
+        "collapsed_fields_final": sum(
+            1 for cell in state.cells.values() if cell.collapsed
+        ),
+        "tunnel_edges_final": len(state.tunnel_edges),
+        "tunnel_nodes_final": len({coord for edge in state.tunnel_edges for coord in edge}),
+        "network_components_final": len(components),
+        "largest_tunnel_component": max((len(component) for component in components), default=0),
+        "fields_with_tunnel_entrance": sum(
+            1 for cell in state.cells.values() if cell.has_tunnel_entrance
+        ),
+        "max_tunnel_pressure_final": max(pressures) if pressures else 0,
+        "avg_tunnel_pressure_final_x100": (
+            int(round((sum(pressures) / len(pressures)) * 100))
+            if pressures
+            else 0
+        ),
+    }
+
+
 def run_matchup(
     *,
     side_length: int,
@@ -174,6 +210,9 @@ def run_matchup(
 
     raid_takeovers = 0
     raid_absorbed = 0
+    tunnel_raid_takeovers = 0
+    shield_bypassed = 0
+    collapsed_fields_total = 0
 
     while not engine.is_game_over():
         first_actor_counts[engine.initiative_first_actor()] += 1
@@ -197,12 +236,18 @@ def run_matchup(
 
                 actions[action_type] += 1
                 actor_actions[actor][action_type] += 1
+                collapsed_fields_total += len(action_result.collapsed)
 
                 if action_type == "raid" and action_result.ok:
                     if is_absorb(action_result.message):
                         raid_absorbed += 1
                     else:
                         raid_takeovers += 1
+
+                if action_type == "tunnel_raid" and action_result.ok:
+                    tunnel_raid_takeovers += 1
+                    if "shield bypassed" in action_result.message:
+                        shield_bypassed += 1
 
         if result.winner is not None:
             break
@@ -222,6 +267,7 @@ def run_matchup(
         reason = natural_reason
 
     shield_stats = final_shield_stats(engine)
+    tunnel_stats = final_tunnel_stats(engine)
 
     row: dict[str, int | str] = {
         "side_length": side_length,
@@ -253,16 +299,31 @@ def run_matchup(
         "field_upgrade": actions["field_upgrade"],
         "core_upgrade": actions["core_upgrade"],
         "wait": actions["wait"],
+        "tunnel_entrance": actions["tunnel_entrance"],
+        "tunnel_extend": actions["tunnel_extend"],
+        "tunnel_raid": actions["tunnel_raid"],
+        "repair_build": actions["repair_build"],
+        "tunnel_raid_takeovers": tunnel_raid_takeovers,
+        "shield_bypassed": shield_bypassed,
+        "collapsed_fields_total": collapsed_fields_total,
         "p_build": actor_actions["player"]["build"],
         "p_raid": actor_actions["player"]["raid"],
         "p_fortify": actor_actions["player"]["fortify"],
         "p_rebuild": actor_actions["player"]["rebuild"],
         "p_wait": actor_actions["player"]["wait"],
+        "p_tunnel_entrance": actor_actions["player"]["tunnel_entrance"],
+        "p_tunnel_extend": actor_actions["player"]["tunnel_extend"],
+        "p_tunnel_raid": actor_actions["player"]["tunnel_raid"],
+        "p_repair_build": actor_actions["player"]["repair_build"],
         "e_build": actor_actions["enemy"]["build"],
         "e_raid": actor_actions["enemy"]["raid"],
         "e_fortify": actor_actions["enemy"]["fortify"],
         "e_rebuild": actor_actions["enemy"]["rebuild"],
         "e_wait": actor_actions["enemy"]["wait"],
+        "e_tunnel_entrance": actor_actions["enemy"]["tunnel_entrance"],
+        "e_tunnel_extend": actor_actions["enemy"]["tunnel_extend"],
+        "e_tunnel_raid": actor_actions["enemy"]["tunnel_raid"],
+        "e_repair_build": actor_actions["enemy"]["repair_build"],
         "p_holz_waste": waste["player"]["Holz"],
         "p_stein_waste": waste["player"]["Stein"],
         "p_korn_waste": waste["player"]["Korn"],
@@ -276,6 +337,7 @@ def run_matchup(
         "e_stein": state.actor_state("enemy").resources["Stein"],
         "e_korn": state.actor_state("enemy").resources["Korn"],
         **shield_stats,
+        **tunnel_stats,
     }
 
     return row
@@ -339,7 +401,8 @@ def main() -> None:
     print(
         "board,matchup,winner,reason,natural_winner,natural_reason,round,p/e/n,"
         "timeout_diff,fortify,absorbed,takeovers,rebuild,p_rebuild,e_rebuild,"
-        "p_korn_waste,e_korn_waste,shield_points"
+        "tunnel_entrance,tunnel_extend,tunnel_raid,repair_build,collapsed_final,"
+        "tunnel_edges,p_korn_waste,e_korn_waste,shield_points"
     )
     for row in rows:
         print(
@@ -358,6 +421,12 @@ def main() -> None:
             f"{row['rebuild']},"
             f"{row['p_rebuild']},"
             f"{row['e_rebuild']},"
+            f"{row['tunnel_entrance']},"
+            f"{row['tunnel_extend']},"
+            f"{row['tunnel_raid']},"
+            f"{row['repair_build']},"
+            f"{row['collapsed_fields_final']},"
+            f"{row['tunnel_edges_final']},"
             f"{row['p_korn_waste']},"
             f"{row['e_korn_waste']},"
             f"{row['final_shield_points']}"
