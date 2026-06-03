@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal
 
 from src.maillon_v04.board import Coord, HexBoard
@@ -9,6 +9,7 @@ from src.maillon_v04.board import Coord, HexBoard
 ActorId = Literal["player", "enemy"]
 ResourceName = Literal["Holz", "Stein", "Korn"]
 FieldType = Literal["Core", "Holz", "Stein", "Korn"]
+TunnelEdge = tuple[Coord, Coord]
 
 
 RESOURCE_NAMES: tuple[ResourceName, ...] = ("Holz", "Stein", "Korn")
@@ -27,12 +28,13 @@ class CellState:
 
     level:
         Produktions-/Ausbaustufe.
-        Für v0.4 sind Level 1 und 2 relevant.
+        Für v0.4/v0.5 sind Level 1 und 2 relevant.
         Core Level 2 bedeutet aktuell: Caps wurden erhöht.
+        Für v0.6 gilt: collapsed Felder haben level 0.
 
     active_from_round:
         Runde, ab der das Feld wieder aktiv ist.
-        Wird bei Build, Rebuild und Raid-Instabilität relevant.
+        Wird bei Build, Rebuild, Raid-Instabilität und später Repair relevant.
 
     contested_count:
         Wie oft dieses Feld per Raid umkämpft wurde.
@@ -41,6 +43,15 @@ class CellState:
     raid_shield:
         Befestigung / Raid-Schutz eines Nicht-Core-Feldes.
         Jeder gegnerische Raid entfernt zuerst eine Schutzstufe.
+
+    has_tunnel_entrance:
+        Sichtbarer Tunneleingang auf der Oberfläche.
+        Gibt später Zugang zum verbundenen Tunnelnetz.
+
+    collapsed:
+        Kaputter Sonderzustand.
+        Collapsed Felder sind nicht normale neutrale Felder und werden später
+        nur per repair_build wieder nutzbar gemacht.
     """
 
     owner: ActorId | None = None
@@ -49,10 +60,12 @@ class CellState:
     active_from_round: int = 1
     contested_count: int = 0
     raid_shield: int = 0
+    has_tunnel_entrance: bool = False
+    collapsed: bool = False
 
     @property
     def is_empty(self) -> bool:
-        return self.owner is None and self.field_type is None
+        return self.owner is None and self.field_type is None and not self.collapsed
 
     @property
     def is_core(self) -> bool:
@@ -87,7 +100,7 @@ class ActorState:
 @dataclass
 class GameState:
     """
-    Vollständiger Spielzustand für Maillon v0.4.
+    Vollständiger Spielzustand für Maillon.
 
     Dieses Modul enthält bewusst keine Aktionslogik.
     Regeln, Kosten und Aktionen kommen später in rules.py/actions.py.
@@ -99,6 +112,7 @@ class GameState:
     player_core: Coord
     enemy_core: Coord
     actors: dict[ActorId, ActorState]
+    tunnel_edges: set[TunnelEdge] = field(default_factory=set)
 
     def actor_state(self, actor: ActorId) -> ActorState:
         return self.actors[actor]
@@ -130,7 +144,7 @@ class GameState:
         return sorted(
             coord
             for coord, cell in self.cells.items()
-            if cell.owner is None
+            if cell.owner is None and not cell.collapsed
         )
 
     def opponent(self, actor: ActorId) -> ActorId:
@@ -158,6 +172,8 @@ class GameState:
                     active_from_round=cell.active_from_round,
                     contested_count=cell.contested_count,
                     raid_shield=cell.raid_shield,
+                    has_tunnel_entrance=cell.has_tunnel_entrance,
+                    collapsed=cell.collapsed,
                 )
                 for coord, cell in self.cells.items()
             },
@@ -170,12 +186,13 @@ class GameState:
                 )
                 for actor, actor_state in self.actors.items()
             },
+            tunnel_edges=set(self.tunnel_edges),
         )
 
 
 def create_initial_state(side_length: int = 5) -> GameState:
     """
-    Erstellt den v0.4-Startzustand.
+    Erstellt den v0.4/v0.5-Startzustand.
 
     Default:
         side_length 5 = 61 Felder.
