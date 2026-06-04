@@ -11,6 +11,10 @@ from src.maillon_v04.actions import (
     affordable_fortify_targets,
     affordable_raid_targets,
     affordable_rebuild_targets,
+    affordable_tunnel_entrance_targets,
+    affordable_tunnel_extend_targets,
+    affordable_tunnel_raid_targets,
+    affordable_tunnel_repair_build_targets,
     apply_action,
 )
 from src.maillon_v04.bot import BotPolicy
@@ -199,15 +203,19 @@ def print_owned_fields(state: GameState, actor: ActorId = "player") -> None:
 
 def print_front_targets(state: GameState, actor: ActorId = "player") -> None:
     print()
-    print(f"{actor.upper()} AKTIONSÜBERSICHT")
+    print(f"{actor.upper()} DEBUG-AKTIONSÜBERSICHT")
     print("-" * 72)
 
-    print(f"Build-Ziele:         {len(affordable_build_targets(state, actor))}")
-    print(f"Raid-Ziele:          {len(affordable_raid_targets(state, actor))}")
-    print(f"Rebuild-Ziele:       {len(affordable_rebuild_targets(state, actor))}")
-    print(f"Field-Upgrade-Ziele: {len(affordable_field_upgrade_targets(state, actor))}")
-    print(f"Fortify-Ziele:       {len(affordable_fortify_targets(state, actor))}")
-    print(f"Core-Upgrade-Ziele:  {len(affordable_core_upgrade_targets(state, actor))}")
+    print(f"Build-Ziele:            {len(affordable_build_targets(state, actor))}")
+    print(f"Raid-Ziele:             {len(affordable_raid_targets(state, actor))}")
+    print(f"Rebuild-Ziele:          {len(affordable_rebuild_targets(state, actor))}")
+    print(f"Field-Upgrade-Ziele:    {len(affordable_field_upgrade_targets(state, actor))}")
+    print(f"Fortify-Ziele:          {len(affordable_fortify_targets(state, actor))}")
+    print(f"Core-Upgrade-Ziele:     {len(affordable_core_upgrade_targets(state, actor))}")
+    print(f"Tunnel-Entrance-Ziele:  {len(affordable_tunnel_entrance_targets(state, actor))}")
+    print(f"Tunnel-Extend-Ziele:    {len(affordable_tunnel_extend_targets(state, actor))}")
+    print(f"Tunnel-Raid-Ziele:      {len(affordable_tunnel_raid_targets(state, actor))}")
+    print(f"Repair-Build-Ziele:     {len(affordable_tunnel_repair_build_targets(state, actor))}")
 
 
 def print_board_map(engine: GameEngine) -> None:
@@ -364,14 +372,41 @@ def fortify_action_from_input(state: GameState, actor: ActorId) -> Action | None
 
 
 def player_available_counts(state: GameState) -> dict[str, int]:
-    return {
+    counts = {
         "build": len(affordable_build_targets(state, "player")),
         "raid": len(affordable_raid_targets(state, "player")),
         "rebuild": len(affordable_rebuild_targets(state, "player")),
         "field_upgrade": len(affordable_field_upgrade_targets(state, "player")),
         "fortify": len(affordable_fortify_targets(state, "player")),
         "core_upgrade": len(affordable_core_upgrade_targets(state, "player")),
+        "tunnel_entrance": len(affordable_tunnel_entrance_targets(state, "player")),
+        "tunnel_extend": len(affordable_tunnel_extend_targets(state, "player")),
+        "tunnel_raid": len(affordable_tunnel_raid_targets(state, "player")),
+        "repair_build": len(affordable_tunnel_repair_build_targets(state, "player")),
     }
+
+    counts["group_build"] = counts["build"]
+    counts["group_attack"] = counts["raid"]
+    counts["group_develop"] = (
+        counts["rebuild"]
+        + counts["field_upgrade"]
+        + counts["fortify"]
+        + counts["core_upgrade"]
+    )
+    counts["group_tunnel"] = (
+        counts["tunnel_entrance"]
+        + counts["tunnel_extend"]
+        + counts["tunnel_raid"]
+        + counts["repair_build"]
+    )
+    counts["group_total"] = (
+        counts["group_build"]
+        + counts["group_attack"]
+        + counts["group_develop"]
+        + counts["group_tunnel"]
+    )
+
+    return counts
 
 
 def print_player_action_header(engine: GameEngine, action_number: int) -> dict[str, int]:
@@ -389,13 +424,20 @@ def print_player_action_header(engine: GameEngine, action_number: int) -> dict[s
     )
     print(
         "Möglich: "
-        f"Build {counts['build']} | "
-        f"Raid {counts['raid']} | "
-        f"Rebuild {counts['rebuild']} | "
-        f"Upgrade {counts['field_upgrade']} | "
-        f"Fortify {counts['fortify']} | "
-        f"Core {counts['core_upgrade']}"
+        f"Build {counts['group_build']} | "
+        f"Attack {counts['group_attack']} | "
+        f"Develop {counts['group_develop']} | "
+        f"Tunnel {counts['group_tunnel']}"
     )
+
+    if counts["group_tunnel"] > 0:
+        print(
+            "Tunnel: "
+            f"Entrance {counts['tunnel_entrance']} | "
+            f"Extend {counts['tunnel_extend']} | "
+            f"Raid {counts['tunnel_raid']} | "
+            f"Repair {counts['repair_build']}"
+        )
 
     return counts
 
