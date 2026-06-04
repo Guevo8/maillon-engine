@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from src.maillon_v04.board import Coord
 from src.maillon_v04.state import GameState
+from src.maillon_v04.tunnels import is_under_tunnel
 
 
 def field_letter(field_type: str | None) -> str:
@@ -20,16 +21,34 @@ def field_letter(field_type: str | None) -> str:
     return "."
 
 
+def tunnel_suffix(state: GameState, coord: Coord) -> str:
+    cell = state.cell(coord)
+
+    # Tunneleingang zählt immer auch als untergraben.
+    if cell.has_tunnel_entrance:
+        return "tu"
+
+    if is_under_tunnel(state, coord):
+        return "u"
+
+    return ""
+
+
 def cell_token(state: GameState, coord: Coord) -> str:
     cell = state.cell(coord)
 
+    if cell.collapsed:
+        return "XX"
+
+    suffix = tunnel_suffix(state, coord)
+
     if cell.owner is None:
-        return ".."
+        return ".." + suffix
 
     owner = "P" if cell.owner == "player" else "E"
     field = field_letter(cell.field_type)
 
-    token = owner + field
+    token = owner + field + suffix
 
     # Instabile Felder werden klein geschrieben.
     # Beispiel: pK = Player-Kornfeld, aber aktuell instabil.
@@ -37,8 +56,6 @@ def cell_token(state: GameState, coord: Coord) -> str:
         token = token.lower()
 
     return token
-
-
 def render_board(state: GameState) -> str:
     """
     Gibt eine kompakte axiale Hex-Board-Ansicht zurück.
@@ -84,6 +101,7 @@ def render_legend() -> str:
         "- P = Player, E = Enemy",
         "- C = Core, H = Holz, S = Stein, K = Korn",
         "- .. = neutral",
+        "- u = untergraben, tu = Tunneleingang + untergraben, XX = collapsed",
         "- Kleinbuchstaben, z. B. pK/eH = instabil / nicht aktiv",
     ]
 
