@@ -233,6 +233,11 @@ def print_board_map(engine: GameEngine) -> None:
     print()
 
 
+def print_status_and_map(engine: GameEngine) -> None:
+    print_status(engine)
+    print_board_map(engine)
+
+
 def build_action_from_input(state: GameState, actor: ActorId) -> Action | None:
     targets = affordable_build_targets(state, actor)
     cost = build_cost_holz(state, actor)
@@ -532,6 +537,51 @@ def choose_tunnel_action_from_input(state: GameState, actor: ActorId) -> Action 
 
 
 
+def choose_develop_action_from_input(state: GameState, actor: ActorId) -> Action | None:
+    counts = {
+        "rebuild": len(affordable_rebuild_targets(state, actor)),
+        "field_upgrade": len(affordable_field_upgrade_targets(state, actor)),
+        "fortify": len(affordable_fortify_targets(state, actor)),
+        "core_upgrade": len(affordable_core_upgrade_targets(state, actor)),
+    }
+
+    menu: list[tuple[str, str]] = []
+
+    if counts["rebuild"] > 0:
+        menu.append(("rebuild", f"Rebuild ({counts['rebuild']})"))
+
+    if counts["field_upgrade"] > 0:
+        menu.append(("field_upgrade", f"Field Upgrade ({counts['field_upgrade']})"))
+
+    if counts["fortify"] > 0:
+        menu.append(("fortify", f"Fortify ({counts['fortify']})"))
+
+    if counts["core_upgrade"] > 0:
+        menu.append(("core_upgrade", f"Core Upgrade ({counts['core_upgrade']})"))
+
+    selected = choose_from_numbered_list("Develop / Upgrade", [(label, key) for key, label in menu])
+
+    if selected is None:
+        return None
+
+    key = cast(str, selected)
+
+    if key == "rebuild":
+        return rebuild_action_from_input(state, actor)
+
+    if key == "field_upgrade":
+        return field_upgrade_action_from_input(state, actor)
+
+    if key == "fortify":
+        return fortify_action_from_input(state, actor)
+
+    if key == "core_upgrade":
+        return core_upgrade_action_from_input(state, actor)
+
+    return None
+
+
+
 def player_available_counts(state: GameState) -> dict[str, int]:
     counts = {
         "build": len(affordable_build_targets(state, "player")),
@@ -611,102 +661,68 @@ def choose_player_action(engine: GameEngine, action_number: int) -> object:
 
         menu: list[tuple[str, str]] = []
 
-        if counts["build"] > 0:
-            menu.append(("build", f"Build ({counts['build']})"))
+        if counts["group_build"] > 0:
+            menu.append(("build", f"Build / Expand ({counts['group_build']})"))
 
-        if counts["raid"] > 0:
-            menu.append(("raid", f"Raid ({counts['raid']})"))
+        if counts["group_attack"] > 0:
+            menu.append(("attack", f"Attack / Raid ({counts['group_attack']})"))
 
-        if counts["rebuild"] > 0:
-            menu.append(("rebuild", f"Rebuild ({counts['rebuild']})"))
+        if counts["group_develop"] > 0:
+            menu.append(("develop", f"Develop / Upgrade ({counts['group_develop']})"))
 
-        if counts["field_upgrade"] > 0:
-            menu.append(("field_upgrade", f"Field Upgrade ({counts['field_upgrade']})"))
+        if counts["group_tunnel"] > 0:
+            menu.append(("tunnel", f"Tunnel ({counts['group_tunnel']})"))
 
-        if counts["fortify"] > 0:
-            menu.append(("fortify", f"Fortify ({counts['fortify']})"))
-
-        if counts["core_upgrade"] > 0:
-            menu.append(("core_upgrade", f"Core Upgrade ({counts['core_upgrade']})"))
+        menu.append(("status_map", "Status / Karte"))
+        menu.append(("end_turn", "Zug beenden"))
+        menu.append(("quit", "Partie abbrechen"))
 
         for index, (_key, label) in enumerate(menu, start=1):
             print(f"[{index}] {label}")
 
-        print("[6] Status")
-        print("[7] Eigene Felder")
-        print("[8] Aktionsübersicht")
-        print("[10] Karte anzeigen")
-        print("[9] Zug beenden")
-        print("[0] Partie abbrechen")
-
-        if not menu:
-            print("Keine ausführbare Aktion verfügbar. Du kannst Status prüfen oder den Zug beenden.")
-
         choice = input_int("> ")
 
-        if choice == 0:
+        if not (1 <= choice <= len(menu)):
+            print("Ungültige Auswahl.")
+            continue
+
+        key = menu[choice - 1][0]
+
+        if key == "quit":
             return QUIT_GAME
 
-        if choice == 6:
-            print_status(engine)
-            continue
-
-        if choice == 7:
-            print_owned_fields(state, "player")
-            continue
-
-        if choice == 8:
-            print_front_targets(state, "player")
-            continue
-
-        if choice == 10:
-            print_board_map(engine)
-            continue
-
-        if choice == 9:
+        if key == "end_turn":
             return END_TURN
 
-        if 1 <= choice <= len(menu):
-            key = menu[choice - 1][0]
+        if key == "status_map":
+            print_status_and_map(engine)
+            continue
 
-            if key == "build":
-                action = build_action_from_input(state, "player")
-                if action is None:
-                    continue
-                return action
+        if key == "build":
+            action = build_action_from_input(state, "player")
+            if action is None:
+                continue
+            return action
 
-            if key == "raid":
-                action = raid_action_from_input(state, "player")
-                if action is None:
-                    continue
-                return action
+        if key == "attack":
+            action = raid_action_from_input(state, "player")
+            if action is None:
+                continue
+            return action
 
-            if key == "rebuild":
-                action = rebuild_action_from_input(state, "player")
-                if action is None:
-                    continue
-                return action
+        if key == "develop":
+            action = choose_develop_action_from_input(state, "player")
+            if action is None:
+                continue
+            return action
 
-            if key == "field_upgrade":
-                action = field_upgrade_action_from_input(state, "player")
-                if action is None:
-                    continue
-                return action
-
-            if key == "core_upgrade":
-                action = core_upgrade_action_from_input(state, "player")
-                if action is None:
-                    continue
-                return action
-
-            if key == "fortify":
-                action = fortify_action_from_input(state, "player")
-                if action is None:
-                    continue
-                return action
+        if key == "tunnel":
+            action = choose_tunnel_action_from_input(state, "player")
+            if action is None:
+                continue
+            return action
 
         print("Ungültige Auswahl.")
-
 
 def choose_board_side_length() -> int:
     print()
