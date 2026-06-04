@@ -744,14 +744,22 @@ def choose_bot_policy() -> BotPolicy:
     print("Gegner-Policy wählen")
     print("[1] phase_player — normaler Referenzbot")
     print("[2] rusher — aggressiver Testbot")
+    print("[3] tunnel_probe — Tunnel-Stressbot / Mechaniktest")
     print("[Enter] phase_player")
 
-    choice = input_int("> ", default=1)
+    while True:
+        choice = input_int("> ", default=1)
 
-    if choice == 2:
-        return "rusher"
+        if choice == 1:
+            return "phase_player"
 
-    return "phase_player"
+        if choice == 2:
+            return "rusher"
+
+        if choice == 3:
+            return "tunnel_probe"
+
+        print("Ungültige Auswahl.")
 
 
 def run_player_phase(engine: GameEngine, logger: RunLogger | None = None) -> bool:
