@@ -27,6 +27,7 @@ from src.maillon_v04.rules import (
     rebuild_cost_holz,
 )
 from src.maillon_v04.state import ActorId, GameState
+from src.maillon_v04.tunnels import is_under_tunnel, tunnel_pressure
 
 
 FIELD_TYPE_CHOICES: tuple[BuildFieldType, ...] = ("Holz", "Stein", "Korn")
@@ -91,8 +92,55 @@ def choose_field_type() -> BuildFieldType | None:
     return cast(BuildFieldType, value)
 
 
+def tunnel_marker_for_coord(state: GameState, coord: Coord) -> str:
+    cell = state.cell(coord)
+    pressure = tunnel_pressure(state, coord)
+
+    if cell.collapsed:
+        return f"X p{pressure}"
+
+    markers: list[str] = []
+
+    if cell.has_tunnel_entrance:
+        markers.append("E")
+    elif is_under_tunnel(state, coord):
+        markers.append("t")
+    else:
+        markers.append("-")
+
+    if pressure > 0:
+        markers.append(f"p{pressure}")
+
+    return " ".join(markers)
+
+
+def tunnel_overview_label(state: GameState) -> str:
+    coords = list(state.cells.keys())
+    collapsed = sum(1 for coord in coords if state.cell(coord).collapsed)
+    entrances = sum(1 for coord in coords if state.cell(coord).has_tunnel_entrance)
+    under_tunnel = sum(1 for coord in coords if is_under_tunnel(state, coord))
+    max_pressure = max((tunnel_pressure(state, coord) for coord in coords), default=0)
+
+    return (
+        f"Tunnel: edges={len(state.tunnel_edges)} | "
+        f"under={under_tunnel} | entrances={entrances} | "
+        f"collapsed={collapsed} | max_pressure={max_pressure}"
+    )
+
+
+def print_tunnel_legend() -> None:
+    print("Tunnel-Legende: E=Eingang | t=untertunnelt | pN=Druck | X=collapsed")
+
+
 def coord_label(state: GameState, coord: Coord) -> str:
     cell = state.cell(coord)
+    tunnel = tunnel_marker_for_coord(state, coord)
+
+    if cell.collapsed:
+        return (
+            f"{coord} | X collapsed | tunnel={tunnel} | "
+            f"shield={cell.raid_shield} | contested={cell.contested_count}"
+        )
 
     owner = cell.owner if cell.owner is not None else "neutral"
     field_type = cell.field_type if cell.field_type is not None else "leer"
@@ -100,9 +148,9 @@ def coord_label(state: GameState, coord: Coord) -> str:
 
     return (
         f"{coord} | {owner} | {field_type} L{cell.level} | "
-        f"{active} | contested={cell.contested_count}"
+        f"{active} | shield={cell.raid_shield} | "
+        f"tunnel={tunnel} | contested={cell.contested_count}"
     )
-
 
 def print_header() -> None:
     print()
@@ -135,6 +183,9 @@ def print_status(engine: GameEngine) -> None:
         )
 
     print()
+    print(tunnel_overview_label(state))
+    print_tunnel_legend()
+    print()
 
 
 def print_owned_fields(state: GameState, actor: ActorId = "player") -> None:
@@ -162,6 +213,9 @@ def print_front_targets(state: GameState, actor: ActorId = "player") -> None:
 def print_board_map(engine: GameEngine) -> None:
     print()
     print(render_board_with_legend(engine.state))
+    print()
+    print(tunnel_overview_label(engine.state))
+    print_tunnel_legend()
     print()
 
 
