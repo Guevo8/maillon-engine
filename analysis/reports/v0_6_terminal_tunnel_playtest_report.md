@@ -28,4 +28,27 @@ Bestätigt wurden:
 - gemeinsamer Netzwerkzugang
 ```
 
-Der
+Der Stand ist damit spielbar genug, um das Tunnelsystem als technischen Prototypen zu dokumentieren.
+
+---
+
+## 2. Wichtigster Playtest-Befund
+
+Die Kernmechanik funktioniert:
+
+```text
+Wer Zugang zum Tunnelnetz hat, kann das bestehende Tunnelnetz nutzen.
+```
+
+Das wurde im Playtest praktisch sichtbar.
+
+Diese Regel ist nicht nur ein Nebeneffekt, sondern eine gewollte Designentscheidung:
+
+```text
+Tunnelkanten sind nicht owned.
+Zugang entsteht über eigene aktive Tunneleingänge.
+Ein verbundenes Tunnelnetz kann strategisch von beiden Seiten genutzt werden,
+wenn Zugang besteht.
+```
+
+Das ist für spätere Botlogik sehr wichtig, weil ein Bot nicht nur eigene Tunnel bauen muss, sondern
