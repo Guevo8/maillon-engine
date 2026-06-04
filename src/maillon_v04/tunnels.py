@@ -65,13 +65,23 @@ def incident_tunnel_edges(state: GameState, coord: Coord) -> set[TunnelEdge]:
 
 def tunnel_pressure(state: GameState, coord: Coord) -> int:
     """
-    v0.6.1 pressure definition.
+    v0.6.2 pressure definition.
 
-    Pressure is the number of active tunnel edges incident to coord.
-    Ownership does not matter. A tunnel is a tunnel.
+    Pressure is:
+    - number of tunnel edges incident to coord
+    - plus 1 if the field has a tunnel entrance
+
+    A tunnel entrance is always also an underground intrusion.
+    Therefore T implies U.
+    Ownership does not matter for pressure.
     """
 
-    return len(incident_tunnel_edges(state, coord))
+    pressure = len(incident_tunnel_edges(state, coord))
+
+    if state.cell(coord).has_tunnel_entrance:
+        pressure += 1
+
+    return pressure
 
 
 def is_under_tunnel(state: GameState, coord: Coord) -> bool:

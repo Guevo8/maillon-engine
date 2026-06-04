@@ -52,10 +52,11 @@ def validate_field_type_for_repair_build(field_type: BuildFieldType | None) -> B
 
 def tunnel_entrance_targets(state: GameState, actor: ActorId) -> list[Coord]:
     """
-    Owned active non-collapsed fields without a tunnel entrance.
+    Owned active non-core, non-collapsed fields without a tunnel entrance.
 
-    A tunnel entrance is a visible surface feature. It does not create a tunnel
-    edge by itself; tunnel_extend uses this access point.
+    A tunnel entrance is a visible surface feature and also counts as
+    underground intrusion / pressure. Core fields are excluded to avoid
+    early special-case rules around core access and core stability.
     """
 
     targets: list[Coord] = []
@@ -64,6 +65,9 @@ def tunnel_entrance_targets(state: GameState, actor: ActorId) -> list[Coord]:
         cell = state.cell(coord)
 
         if cell.collapsed:
+            continue
+
+        if cell.is_core:
             continue
 
         if cell.has_tunnel_entrance:
@@ -91,21 +95,45 @@ def tunnel_extend_targets_from(
     """
     Adjacent target coordinates reachable from one tunnel access node.
 
-    The source must be an actor-reachable tunnel access node. The target may be
-    owned, neutral or enemy, but source and target must not be collapsed and the
-    edge must not already exist.
+    v0.6.2 rule:
+    - source must be an actor-reachable tunnel access node
+    - source must not be collapsed, neutral or core
+    - target must be adjacent by hex side, not corner
+    - target must not be collapsed
+    - target must not be neutral
+    - target must not be core
+    - edge must not already exist
+
+    This keeps tunnel play as a conflict layer on occupied surface fields,
+    not a second expansion layer through empty neutral land.
     """
 
     if source not in tunnel_access_nodes(state, actor):
         return []
 
-    if state.cell(source).collapsed:
+    source_cell = state.cell(source)
+
+    if source_cell.collapsed:
+        return []
+
+    if source_cell.owner is None:
+        return []
+
+    if source_cell.is_core:
         return []
 
     targets: list[Coord] = []
 
     for target in state.board.neighbors(source):
-        if state.cell(target).collapsed:
+        target_cell = state.cell(target)
+
+        if target_cell.collapsed:
+            continue
+
+        if target_cell.owner is None:
+            continue
+
+        if target_cell.is_core:
             continue
 
         if has_tunnel_edge(state, source, target):
