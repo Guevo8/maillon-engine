@@ -31,6 +31,12 @@ from src.maillon_v04.rules import (
     rebuild_cost_holz,
 )
 from src.maillon_v04.state import ActorId, GameState
+from src.maillon_v04.tunnel_rules import (
+    repair_build_cost,
+    tunnel_entrance_cost,
+    tunnel_extend_cost,
+    tunnel_raid_cost,
+)
 from src.maillon_v04.tunnels import is_under_tunnel, tunnel_pressure
 
 
@@ -368,6 +374,161 @@ def fortify_action_from_input(state: GameState, actor: ActorId) -> Action | None
         action_type="fortify",
         target=cast(Coord, target),
     )
+
+
+
+def cost_label(costs: dict[str, int]) -> str:
+    return " + ".join(
+        f"{amount} {resource}"
+        for resource, amount in costs.items()
+        if amount > 0
+    )
+
+
+def tunnel_entrance_action_from_input(state: GameState, actor: ActorId) -> Action | None:
+    targets = affordable_tunnel_entrance_targets(state, actor)
+    cost = tunnel_entrance_cost(state, actor)
+
+    items: list[tuple[str, object]] = [
+        (f"{coord_label(state, coord)} | Kosten: {cost_label(cost)}", coord)
+        for coord in targets
+    ]
+
+    target = choose_from_numbered_list("Tunnel-Eingang bauen", items)
+
+    if target is None:
+        return None
+
+    return Action(
+        actor=actor,
+        action_type="tunnel_entrance",
+        target=cast(Coord, target),
+    )
+
+
+def tunnel_extend_action_from_input(state: GameState, actor: ActorId) -> Action | None:
+    targets = affordable_tunnel_extend_targets(state, actor)
+    cost = tunnel_extend_cost(state, actor)
+
+    items: list[tuple[str, object]] = [
+        (
+            f"{source} -> {target} | "
+            f"Quelle: {coord_label(state, source)} | "
+            f"Ziel: {coord_label(state, target)} | "
+            f"Kosten: {cost_label(cost)}",
+            (source, target),
+        )
+        for source, target in targets
+    ]
+
+    pair = choose_from_numbered_list("Tunnel erweitern", items)
+
+    if pair is None:
+        return None
+
+    source, target = cast(tuple[Coord, Coord], pair)
+
+    return Action(
+        actor=actor,
+        action_type="tunnel_extend",
+        source=source,
+        target=target,
+    )
+
+
+def tunnel_raid_action_from_input(state: GameState, actor: ActorId) -> Action | None:
+    targets = affordable_tunnel_raid_targets(state, actor)
+    cost = tunnel_raid_cost(state, actor)
+
+    items: list[tuple[str, object]] = [
+        (
+            f"{coord_label(state, coord)} | Shield-Bypass | Kosten: {cost_label(cost)}",
+            coord,
+        )
+        for coord in targets
+    ]
+
+    target = choose_from_numbered_list("Tunnel-Raid-Ziel wählen", items)
+
+    if target is None:
+        return None
+
+    return Action(
+        actor=actor,
+        action_type="tunnel_raid",
+        target=cast(Coord, target),
+    )
+
+
+def repair_build_action_from_input(state: GameState, actor: ActorId) -> Action | None:
+    targets = affordable_tunnel_repair_build_targets(state, actor)
+    cost = repair_build_cost(state, actor)
+
+    items: list[tuple[str, object]] = [
+        (f"{coord_label(state, coord)} | Kosten: {cost_label(cost)}", coord)
+        for coord in targets
+    ]
+
+    target = choose_from_numbered_list("Repair-Build-Ziel wählen", items)
+
+    if target is None:
+        return None
+
+    field_type = choose_field_type()
+
+    if field_type is None:
+        return None
+
+    return Action(
+        actor=actor,
+        action_type="repair_build",
+        target=cast(Coord, target),
+        field_type=field_type,
+    )
+
+
+def choose_tunnel_action_from_input(state: GameState, actor: ActorId) -> Action | None:
+    counts = {
+        "tunnel_entrance": len(affordable_tunnel_entrance_targets(state, actor)),
+        "tunnel_extend": len(affordable_tunnel_extend_targets(state, actor)),
+        "tunnel_raid": len(affordable_tunnel_raid_targets(state, actor)),
+        "repair_build": len(affordable_tunnel_repair_build_targets(state, actor)),
+    }
+
+    menu: list[tuple[str, str]] = []
+
+    if counts["tunnel_entrance"] > 0:
+        menu.append(("tunnel_entrance", f"Tunnel-Eingang bauen ({counts['tunnel_entrance']})"))
+
+    if counts["tunnel_extend"] > 0:
+        menu.append(("tunnel_extend", f"Tunnel erweitern ({counts['tunnel_extend']})"))
+
+    if counts["tunnel_raid"] > 0:
+        menu.append(("tunnel_raid", f"Tunnel-Raid ({counts['tunnel_raid']})"))
+
+    if counts["repair_build"] > 0:
+        menu.append(("repair_build", f"Repair-Build ({counts['repair_build']})"))
+
+    selected = choose_from_numbered_list("Tunnelaktionen", [(label, key) for key, label in menu])
+
+    if selected is None:
+        return None
+
+    key = cast(str, selected)
+
+    if key == "tunnel_entrance":
+        return tunnel_entrance_action_from_input(state, actor)
+
+    if key == "tunnel_extend":
+        return tunnel_extend_action_from_input(state, actor)
+
+    if key == "tunnel_raid":
+        return tunnel_raid_action_from_input(state, actor)
+
+    if key == "repair_build":
+        return repair_build_action_from_input(state, actor)
+
+    return None
 
 
 
