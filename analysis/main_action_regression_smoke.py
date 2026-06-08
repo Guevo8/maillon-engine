@@ -293,19 +293,44 @@ def test_tunnel_dispatch_from_main() -> None:
 
     state = create_initial_state(4)
     actor = "player"
-    entrance = (-3, 0)
-    target = (-3, 1)
 
-    state.actor_state(actor).resources["Holz"] = 4
-    state.actor_state(actor).resources["Stein"] = 4
+    # v0.6.2 rule:
+    # - tunnel entrances are not allowed on Core fields
+    # - tunnel_extend targets must be occupied non-core fields
+    #
+    # Initial player non-core field is (-2, 0).
+    # We prepare an adjacent occupied non-core target at (-1, 0).
+    entrance_target = (-2, 0)
+    extend_target = (-1, 0)
+
+    state.actor_state(actor).resources["Holz"] = 6
+    state.actor_state(actor).resources["Stein"] = 6
+    state.actor_state(actor).resources["Korn"] = 6
+
+    target_cell = state.cell(extend_target)
+    target_cell.owner = actor
+    target_cell.field_type = "Stein"
+    target_cell.level = 1
+    target_cell.active_from_round = 1
+    target_cell.collapsed = False
 
     entrance_result = apply_action(
         state,
-        Action(actor=actor, action_type="tunnel_entrance", target=entrance),
+        Action(
+            actor=actor,
+            action_type="tunnel_entrance",
+            target=entrance_target,
+        ),
     )
+
     extend_result = apply_action(
         state,
-        Action(actor=actor, action_type="tunnel_extend", source=entrance, target=target),
+        Action(
+            actor=actor,
+            action_type="tunnel_extend",
+            source=entrance_target,
+            target=extend_target,
+        ),
     )
 
     print("entrance:", entrance_result)
@@ -314,8 +339,8 @@ def test_tunnel_dispatch_from_main() -> None:
 
     assert_equal(entrance_result.ok, True, "main tunnel_entrance ok")
     assert_equal(extend_result.ok, True, "main tunnel_extend ok")
-    assert_equal(len(state.tunnel_edges), 1, "main tunnel edge created")
-
+    assert_equal(state.cell(entrance_target).has_tunnel_entrance, True, "entrance set")
+    assert_equal(len(state.tunnel_edges), 1, "one tunnel edge")
 
 def run_smoke() -> None:
     print("MAILLON v0.6 MAIN ACTION REGRESSION SMOKE")

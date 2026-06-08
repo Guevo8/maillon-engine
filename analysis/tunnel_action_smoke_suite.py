@@ -41,12 +41,16 @@ def print_section(title: str) -> None:
     print("-" * 72)
 
 
+
 def test_tunnel_entrance() -> None:
     print_section("1. tunnel_entrance")
 
     state = create_initial_state(4)
     actor = "player"
-    target = (-3, 0)
+
+    # v0.6.2: tunnel entrances are not allowed on Core fields.
+    # Initial player non-core field is (-2, 0).
+    target = (-2, 0)
 
     state.actor_state(actor).resources["Holz"] = 2
     state.actor_state(actor).resources["Stein"] = 2
@@ -60,10 +64,12 @@ def test_tunnel_entrance() -> None:
     print("before targets:", before_targets)
     print("result:", result)
     print("resources:", dict(state.actor_state(actor).resources))
+    print("pressure:", tunnel_pressure(state, target))
 
     assert_true(target in before_targets, "entrance target available before action")
     assert_equal(result.ok, True, "tunnel_entrance ok")
     assert_equal(state.cell(target).has_tunnel_entrance, True, "entrance flag")
+    assert_equal(tunnel_pressure(state, target), 1, "entrance pressure")
     assert_equal(state.actor_state(actor).resources["Holz"], 1, "Holz after entrance")
     assert_equal(state.actor_state(actor).resources["Stein"], 0, "Stein after entrance")
     assert_true(target not in tunnel_entrance_targets(state, actor), "entrance target removed after action")
@@ -74,7 +80,18 @@ def test_tunnel_extend() -> None:
 
     state = create_initial_state(4)
     actor = "player"
-    entrance = (-3, 0)
+
+    # v0.6.2:
+    # - entrance must be on an owned non-core field
+    # - extend target must be occupied non-core, not neutral
+    entrance = (-2, 0)
+    target = (-1, 0)
+
+    state.cell(target).owner = actor
+    state.cell(target).field_type = "Stein"
+    state.cell(target).level = 1
+    state.cell(target).active_from_round = 1
+    state.cell(target).collapsed = False
 
     state.actor_state(actor).resources["Holz"] = 3
     state.actor_state(actor).resources["Stein"] = 3
@@ -86,28 +103,29 @@ def test_tunnel_extend() -> None:
     assert_equal(entrance_result.ok, True, "setup entrance ok")
 
     pairs = affordable_tunnel_extend_targets(state, actor)
-    source, target = pairs[0]
+    assert_true((entrance, target) in pairs, "occupied extend target available")
+
     extend_result = apply_tunnel_action(
         state,
         TunnelAction(
             actor=actor,
             action_type="tunnel_extend",
-            source=source,
+            source=entrance,
             target=target,
         ),
     )
 
     print("extend pairs:", tunnel_extend_targets(state, actor))
-    print("chosen:", (source, target))
+    print("chosen:", (entrance, target))
     print("result:", extend_result)
     print("edges:", sorted(state.tunnel_edges))
     print("access:", sorted(tunnel_access_nodes(state, actor)))
 
     assert_equal(extend_result.ok, True, "tunnel_extend ok")
     assert_equal(len(state.tunnel_edges), 1, "one tunnel edge after extend")
-    assert_equal(tunnel_pressure(state, source), 1, "source pressure")
+    assert_equal(tunnel_pressure(state, entrance), 2, "source pressure includes entrance")
     assert_equal(tunnel_pressure(state, target), 1, "target pressure")
-    assert_true(source in tunnel_access_nodes(state, actor), "source reachable")
+    assert_true(entrance in tunnel_access_nodes(state, actor), "source reachable")
     assert_true(target in tunnel_access_nodes(state, actor), "target reachable")
 
 
@@ -124,6 +142,7 @@ def test_tunnel_extend_collapse() -> None:
         level=1,
         active_from_round=1,
     )
+
     state.actor_state(actor).resources["Holz"] = 10
     state.actor_state(actor).resources["Stein"] = 10
 
@@ -132,8 +151,20 @@ def test_tunnel_extend_collapse() -> None:
         TunnelAction(actor=actor, action_type="tunnel_entrance", target=center),
     )
     assert_equal(entrance_result.ok, True, "center entrance ok")
+    assert_equal(tunnel_pressure(state, center), 1, "center pressure after entrance")
 
-    neighbors = state.board.neighbors(center)[:4]
+    # v0.6.2: entrance already counts as pressure +1.
+    # Therefore collapse happens after 3 additional tunnel edges:
+    # pressure = entrance 1 + 3 edges = 4.
+    neighbors = state.board.neighbors(center)[:3]
+
+    for neighbor in neighbors:
+        cell = state.cell(neighbor)
+        cell.owner = actor
+        cell.field_type = "Stein"
+        cell.level = 1
+        cell.active_from_round = 1
+        cell.collapsed = False
 
     for index, neighbor in enumerate(neighbors, start=1):
         result = apply_tunnel_action(
@@ -155,12 +186,12 @@ def test_tunnel_extend_collapse() -> None:
 
         assert_equal(result.ok, True, f"extend {index} ok")
 
-        if index < 4:
+        if index < 3:
             assert_equal(result.collapsed, (), f"extend {index} no collapse")
             assert_equal(state.cell(center).collapsed, False, f"center not collapsed after extend {index}")
-            assert_equal(tunnel_pressure(state, center), index, f"pressure after extend {index}")
+            assert_equal(tunnel_pressure(state, center), index + 1, f"pressure after extend {index}")
         else:
-            assert_equal(result.collapsed, (center,), "extend 4 collapses center")
+            assert_equal(result.collapsed, (center,), "extend 3 collapses center")
             assert_equal(state.cell(center).collapsed, True, "center collapsed")
             assert_equal(state.cell(center).owner, None, "collapsed owner")
             assert_equal(state.cell(center).field_type, None, "collapsed field_type")
@@ -177,8 +208,10 @@ def test_tunnel_raid() -> None:
     state = create_initial_state(4)
     actor = "player"
     enemy = "enemy"
-    entrance = (-3, 0)
-    target = (-2, 0)
+
+    # v0.6.2: use non-core occupied fields.
+    entrance = (-2, 0)
+    target = (-1, 0)
 
     state.cell(entrance).owner = actor
     state.cell(entrance).field_type = "Holz"
@@ -191,6 +224,7 @@ def test_tunnel_raid() -> None:
     state.cell(target).level = 2
     state.cell(target).raid_shield = 3
     state.cell(target).active_from_round = 1
+    state.cell(target).collapsed = False
 
     state.actor_state(actor).resources["Korn"] = 3
     add_tunnel_edge(state, entrance, target)
@@ -227,7 +261,6 @@ def test_tunnel_raid() -> None:
     assert_equal(state.cell(target).has_tunnel_entrance, False, "target entrance after tunnel_raid")
     assert_equal(state.actor_state(actor).resources["Korn"], 0, "Korn after tunnel_raid")
     assert_equal(len(state.tunnel_edges), 1, "tunnel edge remains after tunnel_raid")
-
 
 def test_repair_build() -> None:
     print_section("5. repair_build")
