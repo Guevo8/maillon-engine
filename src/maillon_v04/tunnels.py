@@ -4,10 +4,14 @@ from collections import deque
 
 from src.maillon_v04.board import Coord
 from src.maillon_v04.state import ActorId, GameState, TunnelEdge
+from src.maillon_v04.tunnel_config import (
+    DEFAULT_COLLAPSE_THRESHOLD,
+    DEFAULT_TUNNEL_RAID_KORN,
+)
 
 
-TUNNEL_RAID_KORN_COST = 3
-COLLAPSE_THRESHOLD = 4
+TUNNEL_RAID_KORN_COST = DEFAULT_TUNNEL_RAID_KORN
+COLLAPSE_THRESHOLD = DEFAULT_COLLAPSE_THRESHOLD
 
 
 def normalize_tunnel_edge(a: Coord, b: Coord) -> TunnelEdge:

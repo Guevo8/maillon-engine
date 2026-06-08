@@ -1,22 +1,34 @@
 from __future__ import annotations
 
 from src.maillon_v04.state import ActorId, GameState, ResourceName
-from src.maillon_v04.tunnels import TUNNEL_RAID_KORN_COST
+from src.maillon_v04.tunnel_config import (
+    DEFAULT_REPAIR_BUILD_HOLZ,
+    DEFAULT_REPAIR_BUILD_STEIN,
+    DEFAULT_TUNNEL_ENTRANCE_HOLZ,
+    DEFAULT_TUNNEL_ENTRANCE_STEIN,
+    DEFAULT_TUNNEL_EXTEND_HOLZ,
+    DEFAULT_TUNNEL_EXTEND_STEIN,
+    DEFAULT_TUNNEL_RAID_KORN,
+)
 
 
 TUNNEL_ENTRANCE_COSTS: dict[ResourceName, int] = {
-    "Holz": 1,
-    "Stein": 2,
+    "Holz": DEFAULT_TUNNEL_ENTRANCE_HOLZ,
+    "Stein": DEFAULT_TUNNEL_ENTRANCE_STEIN,
 }
 
 TUNNEL_EXTEND_COSTS: dict[ResourceName, int] = {
-    "Holz": 1,
-    "Stein": 1,
+    "Holz": DEFAULT_TUNNEL_EXTEND_HOLZ,
+    "Stein": DEFAULT_TUNNEL_EXTEND_STEIN,
+}
+
+TUNNEL_RAID_COSTS: dict[ResourceName, int] = {
+    "Korn": DEFAULT_TUNNEL_RAID_KORN,
 }
 
 REPAIR_BUILD_COSTS: dict[ResourceName, int] = {
-    "Holz": 2,
-    "Stein": 2,
+    "Holz": DEFAULT_REPAIR_BUILD_HOLZ,
+    "Stein": DEFAULT_REPAIR_BUILD_STEIN,
 }
 
 
@@ -53,7 +65,7 @@ def tunnel_raid_cost(state: GameState, actor: ActorId) -> dict[ResourceName, int
 
     _ = state
     _ = actor
-    return {"Korn": TUNNEL_RAID_KORN_COST}
+    return dict(TUNNEL_RAID_COSTS)
 
 
 def repair_build_cost(state: GameState, actor: ActorId) -> dict[ResourceName, int]:
