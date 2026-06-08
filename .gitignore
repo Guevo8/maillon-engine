@@ -14,3 +14,18 @@ data/savegame.json
 # Local playtest runs / runtime exports
 runs/
 
+
+# Local generated dumps / AI context exports
+project_contents.txt
+*_contents.txt
+
+# Environment / secrets
+.env
+.env.*
+*.env
+
+# Local scratch / logs
+*.log
+tmp/
+scratch/
+local/
