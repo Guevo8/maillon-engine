@@ -29,3 +29,6 @@ project_contents.txt
 tmp/
 scratch/
 local/
+
+# Generated local analysis artifacts
+analysis/reports/utility_tunneler_decision_probe_v0_7.csv
