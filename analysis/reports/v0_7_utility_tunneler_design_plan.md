@@ -77,7 +77,7 @@ Der beste normale Utility-Score wird einmalig pro Entscheidung berechnet:
 
 ```python
 best_raw = max(s.total_score for s in score_candidate_actions(state, actor, "balancer"))
-normal_baseline = best_raw / 60.0  # nicht geclampt, darf > 1.0 sein
+normal_baseline = clamp(best_raw / 60.0, 0.0, 1.0)
 ```
 
 Entscheidungsschwelle:
