@@ -156,22 +156,25 @@ def test_tunnel_raid_preferred_when_valuable() -> None:
     actor = "player"
     player_wood = (-2, 0)
 
-    # Give player full resources
-    state.actor_state(actor).resources["Holz"] = 6
-    state.actor_state(actor).resources["Stein"] = 6
-    state.actor_state(actor).resources["Korn"] = 6
+    # Only Korn is available: no Holz/Stein means no build/entrance/extend/repair.
+    # Normal utility score collapses to near-zero (only wait is affordable),
+    # so the tunnel raid's positive score comfortably exceeds the threshold.
+    state.actor_state(actor).resources["Holz"] = 0
+    state.actor_state(actor).resources["Stein"] = 0
+    state.actor_state(actor).resources["Korn"] = 4  # enough for tunnel_raid (cost=3)
 
-    # Set up tunnel: player entrance, tunnel edge to enemy-owned field
+    # Player has a tunnel entrance and an edge to an enemy field.
+    # The enemy field is put into cooldown (active_from_round far in future) so
+    # normal surface raids are blocked (they require is_active), while tunnel
+    # raids bypass the cooldown check entirely.  This is the canonical use case:
+    # tunnel_raid reaches fields that are currently unraidable on the surface.
     state.cell(player_wood).has_tunnel_entrance = True
-
-    # Place an enemy Korn field adjacent to player's entrance
-    # Hex neighbors of (-2, 0): (-1, 0), (-3, 0), (-2, 1), (-2, -1), (-1, -1), (-3, 1)
     enemy_target = (-1, 0)
     state.cells[enemy_target] = CellState(
         owner="enemy",
         field_type="Korn",
         level=1,
-        active_from_round=1,
+        active_from_round=999,  # in cooldown — surface raid blocked
     )
     add_tunnel_edge(state, player_wood, enemy_target)
 
@@ -179,11 +182,6 @@ def test_tunnel_raid_preferred_when_valuable() -> None:
     action_types = [c.action_type for c in candidates]
     assert_true("tunnel_raid" in action_types, "tunnel_raid_in_candidates")
 
-    chosen = choose_utility_tunneler_action(state, actor)
-    print(f"  chosen: {chosen.action_type} target={chosen.target}")
-
-    # tunnel_raid should be selected since it has high raid_value (enemy Korn)
-    # and we have enough Korn (3) to pay for it
     normal_baseline = _get_normal_baseline(state, actor)
     scores = [score_tunnel_candidate(state, actor, c, normal_baseline) for c in candidates]
     raid_scores = [s for s in scores if s.action.action_type == "tunnel_raid"]
@@ -191,10 +189,18 @@ def test_tunnel_raid_preferred_when_valuable() -> None:
 
     best_raid = max(raid_scores, key=lambda s: s.score)
     print(f"  best_raid_score={best_raid.score:.4f} normal_baseline={normal_baseline:.4f}")
+    assert_true(best_raid.score > 0.0, "raid_score_positive")
+
+    # With low normal baseline, the raid should pass the opportunity-cost threshold
+    from src.maillon_v04.bot_utility_tunneler import OPPORTUNITY_COST_TOLERANCE as TOL
     assert_true(
-        best_raid.score > 0.0,
-        "raid_score_positive",
+        best_raid.score >= normal_baseline - TOL,
+        "raid_competitive_vs_baseline",
     )
+
+    chosen = choose_utility_tunneler_action(state, actor)
+    assert_equal(chosen.action_type, "tunnel_raid", "tunnel_raid_chosen")
+    print(f"  chosen: {chosen.action_type} target={chosen.target} ✓")
 
 
 def test_bot_dispatch() -> None:

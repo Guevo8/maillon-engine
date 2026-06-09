@@ -138,7 +138,11 @@ def _get_normal_baseline(state: GameState, actor: ActorId) -> float:
     if not scores:
         return 0.0
     best_raw = max(s.total_score for s in scores)
-    return best_raw / NORMAL_SCORE_NORMALIZATION_CAP
+    # Clamp to [0.0, 1.0] so the baseline stays in the same range as tunnel
+    # scores. Raw utility totals can exceed NORMAL_SCORE_NORMALIZATION_CAP in
+    # high-resource states; without clamping the threshold comparison
+    # `tunnel_score >= baseline - TOLERANCE` would be impossible to satisfy.
+    return _clamp(best_raw / NORMAL_SCORE_NORMALIZATION_CAP)
 
 
 def _feature_resource_fit(
