@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from typing import Literal
 
+from src.maillon_v04.bot_exploit import (
+    choose_opening_resource_spammer_action,
+    choose_tunnel_all_in_probe_action,
+)
 from src.maillon_v04.bot_utility import choose_best_utility_action
 from src.maillon_v04.bot_utility_tunneler import choose_utility_tunneler_action
 from src.maillon_v04.bot_personality import BotPersonality, PERSONALITY_IDS
@@ -36,6 +40,8 @@ BotPolicy = Literal[
     "utility_opportunist",
     "tunnel_probe",
     "utility_tunneler",
+    "opening_resource_spammer",
+    "tunnel_all_in_probe",
 ]
 
 UTILITY_POLICY_TO_PERSONALITY: dict[str, BotPersonality] = {
@@ -553,6 +559,12 @@ def choose_bot_action(
 
     if policy == "utility_tunneler":
         return choose_utility_tunneler_action(state, actor)
+
+    if policy == "opening_resource_spammer":
+        return choose_opening_resource_spammer_action(state, actor)
+
+    if policy == "tunnel_all_in_probe":
+        return choose_tunnel_all_in_probe_action(state, actor)
 
     personality = utility_personality_for_policy(policy)
     if personality is not None:
