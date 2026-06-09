@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Literal
 
 from src.maillon_v04.bot_utility import choose_best_utility_action
+from src.maillon_v04.bot_utility_tunneler import choose_utility_tunneler_action
 from src.maillon_v04.bot_personality import BotPersonality, PERSONALITY_IDS
 from src.maillon_v04.bot_tunnel_probe import choose_tunnel_probe_action
 from src.maillon_v04.actions import (
@@ -34,6 +35,7 @@ BotPolicy = Literal[
     "utility_aggro_turtle",
     "utility_opportunist",
     "tunnel_probe",
+    "utility_tunneler",
 ]
 
 UTILITY_POLICY_TO_PERSONALITY: dict[str, BotPersonality] = {
@@ -548,6 +550,9 @@ def choose_bot_action(
 
     if policy == "tunnel_probe":
         return choose_tunnel_probe_action(state, actor)
+
+    if policy == "utility_tunneler":
+        return choose_utility_tunneler_action(state, actor)
 
     personality = utility_personality_for_policy(policy)
     if personality is not None:
