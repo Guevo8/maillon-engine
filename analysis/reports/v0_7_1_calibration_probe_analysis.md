@@ -47,7 +47,9 @@ ORS = opening_resource_spammer, TAIP = tunnel_all_in_probe, UB = utility_balance
 
 ### `tunnel_all_in_probe` (3/22 Gesamtsiege — schlechtester Bot)
 
-- Verliert **alle** Matchups auf Board 5, gewann auf Board 4 nur die Spiegelpartie gegen sich selbst (P/E-Ergebnis zählt als 1 Sieg).
+- Board 4: 2/11 Siege — die Spiegelpartie (TAIP vs TAIP, Player gewinnt) und ein Nicht-Spiegel-Sieg als Enemy gegen `utility_balancer`.
+- Board 5: 1/11 Sieg — ausschließlich die Spiegelpartie (TAIP vs TAIP, Enemy gewinnt).
+- In fast allen relevanten Nicht-Spiegel-Matchups verliert der Bot, was die Kernaussage bestätigt:
 - **Ursache**: Der Bot investiert alle Ressourcen sofort in Tunnel-Infrastruktur (Stein, Holz für Eingänge/Extend), bevor er überhaupt nennenswert Territorium kontrolliert. Tunnel-Raids bringen nur Feldübernahmen — damit lässt sich aber kein stabiles Territorium aufbauen, weil Korn/Holz-Produktion fehlt.
 - Typisches Spielende: Domination in Runde 10–14, d.h. der Gegner gewinnt per Territorium-Dominanz, bevor das Tunnel-Netz strategisch wirksam werden kann.
 - Konklusion: **Tunnel ohne Territorial-Basis ist wertlos.** Die Probe erfüllt ihren Zweck — sie zeigt, dass reines Tunnel-All-In eine schwache Strategie ist.
@@ -84,9 +86,9 @@ ORS = opening_resource_spammer, TAIP = tunnel_all_in_probe, UB = utility_balance
 
 ## Fazit und nächste Schritte
 
-### Diagnostik abgeschlossen
+### Erste Kalibrierungsdiagnose abgeschlossen
 
-Die Proben haben ihren Diagnosezweck erfüllt:
+Die ersten Proben haben ihren Diagnosezweck erfüllt:
 
 1. **Tunnel-First-Strategien (TAIP) sind gescheitert** — Bestätigt, dass Tunnel als Ergänzung zu Territorial-Strategien gedacht sein muss, nicht als Ersatz.
 2. **`utility_tunneler` verliert zu oft gegen echte Bots** — Der Opportunity-Cost-Mechanismus ist korrekt implementiert, aber die aktuellen Gewichte schränken Tunnel-Extend zu stark ein.
