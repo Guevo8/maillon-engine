@@ -19,6 +19,9 @@ runs/
 project_contents.txt
 *_contents.txt
 
+# Generated runtime matrix reports
+analysis/reports/runtime_matrix_v0_7_*.csv
+
 # Environment / secrets
 .env
 .env.*
