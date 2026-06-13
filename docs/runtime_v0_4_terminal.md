@@ -151,7 +151,7 @@ Current implemented v0.4 rule core:
 - Collapse
 - 60% territory win condition
 - Alternating phase initiative
-- Runtime bot policies: 9 normal opponents + 3 probe bots
+- Runtime bot policies: 9 terminal-selectable opponents + 3 probe bots
 
 ## Current Non-Goals
 
