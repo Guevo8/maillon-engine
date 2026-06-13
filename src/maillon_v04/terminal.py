@@ -45,6 +45,18 @@ FIELD_TYPE_CHOICES: tuple[BuildFieldType, ...] = ("Holz", "Stein", "Korn")
 END_TURN = object()
 QUIT_GAME = object()
 
+TERMINAL_BOT_OPTIONS: tuple[tuple[BotPolicy, str], ...] = (
+    ("phase_player",         "phasenbasierter Referenzgegner"),
+    ("rusher",               "aggressiver Druckgegner"),
+    ("utility_balancer",     "ausgewogener Utility-Bot"),
+    ("utility_rusher",       "offensive Utility-Personality"),
+    ("utility_economist",    "Wirtschaft und Entwicklung"),
+    ("utility_fortifier",    "defensive Absicherung"),
+    ("utility_aggro_turtle", "Angriff und Verteidigung"),
+    ("utility_opportunist",  "situationsabhängige Entscheidungen"),
+    ("utility_tunneler",     "Utility-Bot mit Tunneloption, experimentell"),
+)
+
 
 def input_int(prompt: str, *, default: int | None = None) -> int:
     while True:
@@ -162,6 +174,7 @@ def coord_label(state: GameState, coord: Coord) -> str:
         f"tunnel={tunnel} | contested={cell.contested_count}"
     )
 
+
 def print_header() -> None:
     print()
     print("=" * 72)
@@ -175,7 +188,11 @@ def print_status(engine: GameEngine) -> None:
 
     print()
     print("-" * 72)
-    print(f"Runde: {summary['round']} | Board: {summary['board_size']} Felder")
+    print(
+        f"Runde: {summary['round']} | "
+        f"Board: {summary['board_size']} Felder | "
+        f"Gegner: {engine.config.bot_policy}"
+    )
     print(f"Sieger: {summary['winner']}")
     print("-" * 72)
 
@@ -381,7 +398,6 @@ def fortify_action_from_input(state: GameState, actor: ActorId) -> Action | None
     )
 
 
-
 def cost_label(costs: dict[str, int]) -> str:
     return " + ".join(
         f"{amount} {resource}"
@@ -536,7 +552,6 @@ def choose_tunnel_action_from_input(state: GameState, actor: ActorId) -> Action 
     return None
 
 
-
 def choose_develop_action_from_input(state: GameState, actor: ActorId) -> Action | None:
     counts = {
         "rebuild": len(affordable_rebuild_targets(state, actor)),
@@ -579,7 +594,6 @@ def choose_develop_action_from_input(state: GameState, actor: ActorId) -> Action
         return core_upgrade_action_from_input(state, actor)
 
     return None
-
 
 
 def player_available_counts(state: GameState) -> dict[str, int]:
@@ -724,6 +738,7 @@ def choose_player_action(engine: GameEngine, action_number: int) -> object:
 
         print("Ungültige Auswahl.")
 
+
 def choose_board_side_length() -> int:
     print()
     print("Boardgröße wählen")
@@ -742,24 +757,59 @@ def choose_board_side_length() -> int:
 def choose_bot_policy() -> BotPolicy:
     print()
     print("Gegner-Policy wählen")
-    print("[1] phase_player — normaler Referenzbot")
-    print("[2] rusher — aggressiver Testbot")
-    print("[3] tunnel_probe — Tunnel-Stressbot / Mechaniktest")
+
+    for index, (policy, description) in enumerate(TERMINAL_BOT_OPTIONS, start=1):
+        print(f"[{index}] {policy} — {description}")
+
     print("[Enter] phase_player")
 
     while True:
-        choice = input_int("> ", default=1)
+        raw = input("> ").strip()
 
-        if choice == 1:
+        if raw == "":
             return "phase_player"
 
-        if choice == 2:
-            return "rusher"
+        try:
+            choice = int(raw)
+        except ValueError:
+            print("Bitte eine Zahl eingeben.")
+            continue
 
-        if choice == 3:
-            return "tunnel_probe"
+        if 1 <= choice <= len(TERMINAL_BOT_OPTIONS):
+            return TERMINAL_BOT_OPTIONS[choice - 1][0]
 
         print("Ungültige Auswahl.")
+
+
+def phase_order(engine: GameEngine) -> tuple[ActorId, ActorId]:
+    first = engine.initiative_first_actor()
+    second: ActorId = "enemy" if first == "player" else "player"
+    return first, second
+
+
+def print_round_header(engine: GameEngine) -> tuple[ActorId, ActorId]:
+    first, second = phase_order(engine)
+    first_label  = "Spieler" if first  == "player" else "Gegner"
+    second_label = "Spieler" if second == "player" else "Gegner"
+
+    print()
+    print("=" * 72)
+    print(f"RUNDE {engine.state.round_index}")
+    print(f"Initiative: {first_label}")
+    print(f"Reihenfolge: {first_label} → {second_label}")
+    print("=" * 72)
+
+    return first, second
+
+
+def run_phase(
+    engine: GameEngine,
+    actor: ActorId,
+    logger: RunLogger | None = None,
+) -> bool:
+    if actor == "player":
+        return run_player_phase(engine, logger)
+    return run_enemy_phase(engine, logger)
 
 
 def run_player_phase(engine: GameEngine, logger: RunLogger | None = None) -> bool:
@@ -854,15 +904,16 @@ def run_game() -> None:
 
     print()
     print("Neues Spiel gestartet.")
+    print()
+    print(f"Board: {engine.state.board.size} Felder")
+    print(f"Gegner: {bot_policy}")
+    print(f"Aktionen pro Phase: {engine.config.actions_per_turn}")
     print(f"Run-Log: {logger.latest_run_path}")
     print(f"Latest State: {logger.latest_state_path}")
     print_status(engine)
 
     while not engine.is_game_over():
-        print()
-        print("=" * 72)
-        print(f"RUNDE {engine.state.round_index}")
-        print("=" * 72)
+        first, second = print_round_header(engine)
 
         waste = engine.start_round()
         logger.append_production(engine, waste)
@@ -874,14 +925,16 @@ def run_game() -> None:
 
         print_status(engine)
 
-        keep_playing = run_player_phase(engine, logger)
+        round_completed = True
 
-        if not keep_playing:
-            break
+        for actor in (first, second):
+            keep_playing = run_phase(engine, actor, logger)
 
-        keep_playing = run_enemy_phase(engine, logger)
+            if not keep_playing:
+                round_completed = False
+                break
 
-        if not keep_playing:
+        if not round_completed:
             break
 
         if engine.current_winner() is None:

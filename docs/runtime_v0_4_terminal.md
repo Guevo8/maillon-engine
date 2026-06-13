@@ -1,5 +1,9 @@
 # Maillon v0.4 Terminal Runtime
 
+## Role
+
+The terminal is the playable reference client for Maillon v0.4. Its purpose is qualitative rule and feel testing before the Godot port. It is not an analysis dashboard and not the final UI.
+
 ## Status
 
 The Maillon v0.4 terminal runtime is the current playable reference prototype for the analyzed v0.4 rule core.
@@ -14,28 +18,62 @@ Run from the repository root:
 
 Default setup:
 
-- Board: 61 fields
-- Actions per turn: 3
-- Bot policy: phase_player
-- Win condition: 60% territory control
+- Board: 61 Felder
+- Aktionen pro Phase: 3
+- Standardgegner: phase_player
+- Siegbedingung: 60 % Feldkontrolle
 
 The 61-field board uses a 60% win threshold of 37 controlled fields.
+
+## Initiative
+
+Odd rounds (1, 3, 5, …): player phase first, then enemy phase.
+Even rounds (2, 4, 6, …): enemy phase first, then player phase.
+
+Full phases alternate — not individual actions. Each phase contains up to 3 actions.
+If the first actor wins during their phase, the second phase does not run.
+The round header shows the current initiative and phase order.
+
+## Opponent Selection
+
+Nine opponents are available at game start:
+
+| # | Policy               | Character                                    |
+|---|----------------------|----------------------------------------------|
+| 1 | phase_player         | phasenbasierter Referenzgegner               |
+| 2 | rusher               | aggressiver Druckgegner                      |
+| 3 | utility_balancer     | ausgewogener Utility-Bot                     |
+| 4 | utility_rusher       | offensive Utility-Personality                |
+| 5 | utility_economist    | Wirtschaft und Entwicklung                   |
+| 6 | utility_fortifier    | defensive Absicherung                        |
+| 7 | utility_aggro_turtle | Angriff und Verteidigung                     |
+| 8 | utility_opportunist  | situationsabhängige Entscheidungen           |
+| 9 | utility_tunneler     | Utility-Bot mit Tunneloption (experimentell) |
+
+Probe/analysis bots (`tunnel_probe`, `opening_resource_spammer`, `tunnel_all_in_probe`) are not shown in the normal menu. They remain available via code for diagnostic and calibration runs.
 
 ## Runtime Modules
 
 The v0.4 runtime is split into core logic and clients:
 
     src/maillon_v04/
-      board.py        # Hex board, coordinates, neighbors, distance
-      state.py        # GameState, CellState, ActorState
-      rules.py        # Costs, production, caps, win threshold
-      actions.py      # Legal targets and action execution
-      bot.py          # Runtime bot policies
-      engine.py       # Round loop, production, turns
-      render.py       # Text board rendering
-      terminal.py     # Playable terminal client
-      run_logging.py  # Local run export / snapshots
-      run_report.py   # Compact report from local run logs
+      board.py                # Hex board, coordinates, neighbors, distance
+      state.py                # GameState, CellState, ActorState
+      rules.py                # Costs, production, caps, win threshold
+      actions.py              # Legal targets and action execution
+      bot.py                  # Compatibility facade (re-exports)
+      bot_registry.py         # BotPolicy type, mapping, and dispatch
+      bot_legacy.py           # phase_player and rusher implementations
+      bot_utility.py          # Six utility scoring bots
+      bot_utility_tunneler.py # utility_tunneler overlay
+      bot_exploit.py          # Calibration probe bots
+      bot_tunnel_probe.py     # Tunnel priority-tree probe
+      bot_personality.py      # Personality weight tables
+      engine.py               # Round loop, production, turns, initiative
+      render.py               # Text board rendering
+      terminal.py             # Playable terminal client
+      run_logging.py          # Local run export / snapshots
+      run_report.py           # Compact report from local run logs
 
 ## Controls
 
@@ -92,7 +130,7 @@ Current implemented v0.4 rule core:
 - Fixed hex board
 - 37-field quick board option
 - 61-field standard board option
-- 3 actions per turn
+- 3 actions per phase
 - Resources: Holz, Stein, Korn
 - Resource caps
 - Core Level 2 cap upgrade
@@ -104,8 +142,16 @@ Current implemented v0.4 rule core:
 - Field instability after Raid
 - Tiered Build costs
 - Tiered Field Upgrade costs
+- Fortify / Raid Shields
+- Tunnel Entrance
+- Tunnel Extend
+- Tunnel Raid
+- Repair Build
+- Tunnel Pressure
+- Collapse
 - 60% territory win condition
-- Runtime bot policies: phase_player, rusher
+- Alternating phase initiative
+- Runtime bot policies: 9 terminal-selectable opponents + 3 probe bots
 
 ## Current Non-Goals
 
@@ -113,11 +159,7 @@ The terminal runtime does not currently include:
 
 - Godot implementation
 - Web UI
-- Full Textual UI client
 - Clickable board
-- Real fog of war
-- Core Level 3
-- Repair / stabilization action
 - Save/load menu
 - Multiplayer
 - Final balancing
@@ -212,15 +254,3 @@ Recommended separation:
     run_report.py    = local analysis utility
 
 The rule core should remain UI-independent so that future clients can reuse the same game logic.
-
-## Recommended Next Steps
-
-1. Complete one full playthrough to victory.
-2. Run python -m src.maillon_v04.run_report.
-3. Review action balance, waste, round count, and win timing.
-4. Only then decide whether the next iteration should focus on:
-   - terminal polish,
-   - Textual UI,
-   - bot policy tuning,
-   - balance changes,
-   - or documentation cleanup.
