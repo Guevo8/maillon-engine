@@ -174,6 +174,7 @@ def coord_label(state: GameState, coord: Coord) -> str:
         f"tunnel={tunnel} | contested={cell.contested_count}"
     )
 
+
 def print_header() -> None:
     print()
     print("=" * 72)
@@ -737,6 +738,7 @@ def choose_player_action(engine: GameEngine, action_number: int) -> object:
 
         print("Ungültige Auswahl.")
 
+
 def choose_board_side_length() -> int:
     print()
     print("Boardgröße wählen")
@@ -905,7 +907,7 @@ def run_game() -> None:
     print()
     print(f"Board: {engine.state.board.size} Felder")
     print(f"Gegner: {bot_policy}")
-    print(f"Aktionen pro Zug: {engine.config.actions_per_turn}")
+    print(f"Aktionen pro Phase: {engine.config.actions_per_turn}")
     print(f"Run-Log: {logger.latest_run_path}")
     print(f"Latest State: {logger.latest_state_path}")
     print_status(engine)
