@@ -21,6 +21,7 @@ from src.maillon_v04.tunnel_actions import (
     repair_build_targets,
     tunnel_entrance_targets,
 )
+from src.maillon_v04.tunnel_collapse import apply_collapsed_field_state
 from src.maillon_v04.tunnel_rules import tunnel_entrance_capacity
 
 
@@ -104,17 +105,38 @@ def test_actor(actor: ActorId) -> None:
     not_core.cell(core_coord(not_core, actor)).field_type = "Holz"
     assert_no_capacity_or_targets(not_core, actor, f"{actor} canonical coordinate is not Core")
 
-    # repair_build must not target the core even in a synthetic collapsed state.
-    # A collapsed non-core field adjacent to the same origin IS a valid target;
-    # only the core coordinate is defended.
-    print(f"\n{actor}: collapsed core is not a repair_build target")
+    # repair_build must not target the core even after a full collapse that
+    # clears field_type to None (making is_core return False). The guard uses
+    # the canonical coordinate, which is invariant across any collapse state.
+    print(f"\n{actor}: fully-collapsed core is not a repair_build target")
     print("-" * 72)
 
-    collapsed_core_state = prepare_state(actor)
-    core = core_coord(collapsed_core_state, actor)
-    collapsed_core_state.cell(core).collapsed = True
-    rb_targets = repair_build_targets(collapsed_core_state, actor)
-    assert_true(core not in rb_targets, f"{actor} collapsed core not in repair_build_targets")
+    rb_state = prepare_state(actor)
+    core = core_coord(rb_state, actor)
+
+    own_field = next(
+        coord
+        for coord in rb_state.active_owned_cells(actor)
+        if not rb_state.cell(coord).is_core
+    )
+    non_core_neighbor = next(
+        nb for nb in rb_state.board.neighbors(own_field)
+        if nb not in (rb_state.player_core, rb_state.enemy_core)
+    )
+
+    apply_collapsed_field_state(rb_state, core)
+    apply_collapsed_field_state(rb_state, non_core_neighbor)
+
+    rb_targets = repair_build_targets(rb_state, actor)
+
+    assert_true(
+        core not in rb_targets,
+        f"{actor} fully-collapsed core not in repair_build_targets",
+    )
+    assert_true(
+        non_core_neighbor in rb_targets,
+        f"{actor} non-core collapsed neighbor still in repair_build_targets",
+    )
 
 
 def run_regression() -> None:

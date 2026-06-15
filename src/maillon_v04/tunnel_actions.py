@@ -260,11 +260,12 @@ def repair_build_targets(state: GameState, actor: ActorId) -> list[Coord]:
     Collapsed fields adjacent to at least one active owned non-collapsed field.
 
     repair_build is a special build-like action for broken coordinates. It is
-    not normal build on neutral land. Core coordinates are excluded: the core
-    is immutable actor infrastructure and must not be overwritten by a rebuild.
+    not normal build on neutral land. Core coordinates are excluded by their
+    canonical position, which is invariant across any collapse state.
     """
 
     targets: set[Coord] = set()
+    core_coords = (state.player_core, state.enemy_core)
 
     for origin in state.active_owned_cells(actor):
         if state.cell(origin).collapsed:
@@ -274,7 +275,7 @@ def repair_build_targets(state: GameState, actor: ActorId) -> list[Coord]:
             if not state.cell(target).collapsed:
                 continue
 
-            if state.cell(target).is_core:
+            if target in core_coords:
                 continue
 
             targets.add(target)
