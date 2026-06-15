@@ -19,6 +19,8 @@ from src.maillon_v04.actions import (
     apply_action,
     tunnel_raid_targets,
 )
+from src.maillon_v04.bot import choose_bot_action
+from src.maillon_v04.bot_tunnel_probe import choose_tunnel_raid_pair
 from src.maillon_v04.bot_utility_tunneler import generate_tunnel_candidates
 from src.maillon_v04.rules import (
     effective_board_size,
@@ -785,6 +787,49 @@ def test_group_g_repair_build() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Group H — Tunnel probe raid target heuristic
+# ---------------------------------------------------------------------------
+
+def test_group_h_tunnel_probe_heuristic() -> None:
+    print_section("H. Tunnel probe raid target heuristic")
+
+    actor = "player"
+    source = (-2, 0)       # player's starting Holz field — only corridor source
+    target_holz = (-2, 1)  # weaker: Holz, sorted first (target x=-2 < x=-1)
+    target_korn = (-1, 0)  # stronger: Korn, sorted second (target x=-1)
+
+    state = create_initial_state(4)
+    state.cell(source).has_tunnel_entrance = True
+    state.actor_state(actor).resources.update({"Holz": 1, "Stein": 1, "Korn": 3})
+
+    # Two affordable enemy targets adjacent to the entrance
+    state.cells[target_holz] = CellState(
+        owner="enemy", field_type="Holz", level=1, active_from_round=1
+    )
+    state.cells[target_korn] = CellState(
+        owner="enemy", field_type="Korn", level=1, active_from_round=1
+    )
+
+    pairs = affordable_tunnel_raid_pairs(state, actor)
+    assert_true(len(pairs) >= 2, "H1: at least two affordable pairs exist")
+
+    # Verify sorted order puts the Holz target first (source equal, -2 < -1 on target x)
+    first_source, first_target = pairs[0]
+    assert_equal(first_target, target_holz, "H2: first sorted pair targets the Holz (weaker) cell")
+
+    # choose_tunnel_raid_pair must prefer the Korn target (higher FIELD_VALUE)
+    best_source, best_target = choose_tunnel_raid_pair(state, actor, pairs)
+    assert_equal(best_target, target_korn, "H3: choose_tunnel_raid_pair picks the Korn target")
+    assert_equal(best_source, source, "H4: source is the entrance cell")
+
+    # Bot policy must also produce the Korn target
+    action = choose_bot_action(state, actor, "tunnel_probe")
+    assert_equal(action.action_type, "tunnel_raid", "H5: tunnel_probe dispatches tunnel_raid")
+    assert_equal(action.target, target_korn, "H6: tunnel_probe picks the Korn (better) target")
+    assert_equal(action.source, source, "H7: tunnel_probe source is the entrance cell")
+
+
+# ---------------------------------------------------------------------------
 # Runner
 # ---------------------------------------------------------------------------
 
@@ -801,6 +846,7 @@ def run_smoke_suite() -> None:
     test_group_e_tunnel_raid()
     test_group_f_normal_raid_side_effects()
     test_group_g_repair_build()
+    test_group_h_tunnel_probe_heuristic()
 
     print()
     print("=" * 72)
