@@ -51,7 +51,7 @@ All component magnitudes are in roughly the same range so personality weights re
 - **many neutral fields remaining** → expansion preference
 - **anti-stall finish pressure** (tuned2d) → prevents late-game Korn/Stein waste through rebuild oscillation
 
-The result of `apply_strategic_pressure` becomes the final `raw_score` stored in `ActionScore`.
+The result of `apply_strategic_pressure` becomes the final `raw_score` stored in `UtilityScore`.
 
 ### Step 4 — Personality Weighting
 
@@ -70,7 +70,7 @@ total_score = raw_score × weight
 | `development` | `field_upgrade`, `core_upgrade` |
 | *(fallback)* | `wait` — always weight 1.0 |
 
-Phase (early / mid / late) is determined from `state.round_index` relative to board size. Each of the six personalities has a distinct weight table; `balancer` is the neutral reference with weights near 1.0 across all categories.
+Phase (early / mid / late) is determined from `state.round_index` using fixed round boundaries: Early = rounds 1–7, Mid = 8–14, Late ≥ 15 (see `bot_personality.py:phase_for_round()`). Each of the six personalities has a distinct weight table; `balancer` is the neutral reference with weights near 1.0 across all categories.
 
 #### Personality IDs and character
 
@@ -187,6 +187,6 @@ If a `log_path: Path` is passed to `choose_utility_tunneler_action()`, each deci
 
 Both systems prioritise **explainability before raw strength**.
 
-The normal utility scorer exposes every score component via the `reasons` tuple on `ActionScore`. The tunnel overlay exposes a named `TunnelFeatures` dataclass and a `reasons` tuple per candidate. This makes it straightforward to trace why a specific action was chosen — or why it wasn't — without running a debugger.
+The normal utility scorer exposes every score component via the `reasons` tuple on `UtilityScore`. The tunnel overlay exposes a named `TunnelFeatures` dataclass and a `reasons` tuple per candidate. This makes it straightforward to trace why a specific action was chosen — or why it wasn't — without running a debugger.
 
 Raw win-rate optimisation (weight search, minimax, lookahead) is a deliberate non-goal for the current version. The weight tables are tuned by hand, validated by the runtime matrix, and kept interpretable so design changes can be reasoned about directly.

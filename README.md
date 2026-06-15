@@ -103,12 +103,11 @@ Der nächste Meilenstein ist die Vorbereitung eines visuellen Clients für die P
 
 ## Dokumentation
 
-- [Terminalclient](docs/runtime_v0_4_terminal.md)
-- [Validierter v0.7-Zwischenstand](docs/maillon_v0_7_validation_freeze.md)
-- [Bot- und Strategiekalibrierung](docs/v0_7_1_calibration_plan.md)
 - [Bot-Architektur](docs/bot_architecture_overview.md)
+- [Utility-Gewichtung und Tunneler-Overlay](docs/utility_weighting_mechanics.md)
 - [Analysewerkzeuge und Reports](analysis/README.md)
 - [Entwicklungsverlauf](CHANGELOG.md)
+- [Historische Dokumente](docs/archive/)
 
 ## Lizenz
 
