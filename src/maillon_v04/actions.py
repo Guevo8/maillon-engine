@@ -531,6 +531,7 @@ def apply_raid(state: GameState, action: Action) -> ActionResult:
     cell.owner = actor
     cell.raid_shield = 0
     cell.contested_count += 1
+    cell.has_tunnel_entrance = False
 
     cooldown = min(3, cell.contested_count)
     cell.active_from_round = state.round_index + cooldown
