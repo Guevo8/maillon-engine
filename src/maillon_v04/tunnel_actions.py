@@ -8,7 +8,9 @@ from src.maillon_v04.state import ActorId, GameState
 from src.maillon_v04.rules import can_pay, pay_resources, winner_by_territory
 from src.maillon_v04.tunnel_collapse import check_collapses
 from src.maillon_v04.tunnel_rules import (
+    owned_tunnel_entrance_count,
     repair_build_cost,
+    tunnel_entrance_capacity,
     tunnel_entrance_cost,
     tunnel_extend_cost,
     tunnel_raid_cost,
@@ -58,6 +60,9 @@ def tunnel_entrance_targets(state: GameState, actor: ActorId) -> list[Coord]:
     underground intrusion / pressure. Core fields are excluded to avoid
     early special-case rules around core access and core stability.
     """
+
+    if owned_tunnel_entrance_count(state, actor) >= tunnel_entrance_capacity(state, actor):
+        return []
 
     targets: list[Coord] = []
 
