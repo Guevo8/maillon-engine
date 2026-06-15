@@ -1,95 +1,115 @@
-# maillon-engine
+# Maillon Engine
 
-Maillon Engine ist ein kleines textbasiertes Python-Terminalspiel und ein experimenteller Regelkern für ein ressourcenbasiertes Gebietskontrollspiel.
+> Rundenbasiertes Hex-Strategiespiel mit Ressourcenmanagement, Gebietskontrolle und Tunnelsystem.
 
-Der aktuelle Projektstand besteht aus drei Schichten:
+Maillon begann als Python-Terminalspiel und entwickelte sich über mehrere Regel-, Bot- und Validierungsphasen zu einem spielbaren Strategieprototyp.
 
-```text
-v0.1/v0.2 = historische Runtime
-v0.3      = Board-Baseline-Hypothese
-v0.4      = analysierter Prototypkern
+Aktuell spielt eine Person gegen computergesteuerte Gegner mit unterschiedlichen Strategien. Der bestehende Python-Prototyp bildet die Grundlage für eine grafische Umsetzung in Godot 4.
+
+## Schnellstart
+
+Vorausgesetzt wird eine aktuelle Python-3-Installation. Zusätzliche Pakete werden derzeit nicht benötigt.
+
+```bash
+git clone https://github.com/Guevo8/maillon-engine.git
+cd maillon-engine
+python -m src.maillon_v04.terminal
 ```
 
-Die vorhandene spielbare Runtime basiert noch auf v0.2: Spieler und Nachbar bauen ein 8-Feld-Maillon auf, sammeln Holz, Stein und Korn, verbessern Felder und geraten über Raid und Mondrunde in Konflikt. Der Nachbar ist keine komplexe KI, sondern ein regelbasierter Gegner, der als Bedrohungsuhr funktioniert.
+Beim Start können Boardgröße und Gegner ausgewählt werden.
 
-v0.3 beschreibt den Übergang zu einem räumlichen Hex-Board mit 37er- und 61er-Testboards. v0.4 konkretisiert diese Board-Hypothese durch deterministische Analyse-Simulationen und dient als Grundlage für die nächste spielbare Terminal-Version.
+## Spielprinzip
 
-## Start
+Beide Seiten starten an gegenüberliegenden Enden eines Hexboards und erweitern ihr Gebiet über angrenzende Felder.
 
-Startbefehl für die historische Terminal-Runtime:
+Kontrollierte Felder produzieren:
 
-    python main.py
+- Holz
+- Stein
+- Korn
 
-Beim Start kannst du ein neues Spiel beginnen oder einen vorhandenen Spielstand laden.
+Die Ressourcen werden für Expansion, Angriffe, Verteidigung, Umbauten und Aufwertungen eingesetzt. Begrenzte Speicherkapazitäten erhöhen den Entscheidungsdruck und verhindern unbegrenztes Ansammeln.
 
-Der Spielstand wird automatisch unter `data/savegame.json` gespeichert. Diese Datei ist bewusst in `.gitignore`, damit persönliche Testläufe nicht ins Repo wandern.
+Eine Partie wird über Gebietskontrolle entschieden.
 
-## Aktueller Dokumentationsstand
+## Enthaltene Mechaniken
 
-| Bereich | Datei | Zweck |
-|---|---|---|
-| v0.2 Runtime | `docs/rules_v0_2.md` | historisches spielbares Regelwerk |
-| v0.3 Board-Hypothese | `docs/rules_v0_3_board_baseline.md` | Hex-Board, 37/61 Felder, räumliches Bauen |
-| v0.4 Prototypkern | `docs/maillon_v0_4_rules.md` | aktuell analysierter Regelkern |
-| v0.4 Analysebefunde | `docs/analysis_findings_v0_4.md` | zentrale Ergebnisse der Simulationen |
-| v0.4 Designnotizen | `docs/design_notes_v0_4.md` | offene Optionen und spätere Kandidaten |
-| Kurzchronologie | `docs/dev_log_short.md` | kompakter Entwicklungsverlauf |
-| Analysewerkzeuge | `analysis/README.md` | Einordnung der Analyse-Skripte und Reports |
+- Hexboards in mehreren Größen
+- mehrere Aktionen pro Zugphase
+- räumliches Bauen und Expansion
+- Feld- und Basisaufwertungen
+- Umbau von Produktionsfeldern
+- Raid und direkte Feldübernahme
+- Verteidigung und Schutzwerte
+- wechselnde Initiative
+- Tunnelbau, Tunnelerweiterung und Tunnelangriffe
+- lokale Tunnelbelastung und Feldkollaps
+- Reparatur kollabierter Felder
+- mehrere Bot-Strategien
 
-## Analysewerkzeuge
+## Bots und Balancing
 
-Der Ordner `analysis/` enthält deterministische Design- und Balancing-Werkzeuge. Diese Skripte sind nicht die finale Spiel-Runtime. Sie dienen dazu, Regelvarianten, Bot-Policies, Ressourcendruck, Raid-Verhalten und Front-Hotspots reproduzierbar zu testen.
+Maillon enthält Gegner mit festen Prioritäten sowie Bots, die mögliche Aktionen anhand gewichteter Merkmale des Spielzustands bewerten.
 
-Aktuell relevante Artefakte:
+Zusätzliche Probe-Bots untersuchen gezielt bestimmte Spielweisen:
 
-```text
-analysis/takeover_analysis.py
-analysis/reports/takeover_report_3actions_v0_4.json
-analysis/reports/hotspots_61_cap_aware_vs_rusher_v0_4.csv
+- schnelle Expansion
+- frühe Aggression
+- Ressourcenfokus
+- defensiver Aufbau
+- Tunnel-All-In
+- ausgewogenes Utility-Spiel
+
+Automatisierte Partien erfassen unter anderem Gewinnraten, Aktionshäufigkeiten, Ressourcennutzung, Gebietsentwicklung und strategische Auffälligkeiten.
+
+Der Ordner `analysis/` enthält die zugehörigen Regressionstests, Simulationen und ausgewählten Auswertungen.
+
+## Tests ausführen
+
+Zentrale Regelregression:
+
+```bash
+python -m analysis.pre_godot_rule_regression
 ```
 
-## Scope v0.2 Runtime
+Weitere relevante Prüfungen:
 
-Enthalten sind:
+```bash
+python -m analysis.bot_behavior_characterization
+python -m analysis.main_action_regression_smoke
+python -m analysis.tunnel_action_smoke_suite
+python -m analysis.utility_tunneler_smoke
+```
 
-- Solo-Terminalspiel
-- Ressourcen Holz, Stein und Korn
-- Dorfkern und maximal 8 Felder
-- Spieler und Nachbar
-- Nachbar als regelbasierter Gegner
-- Ertrag per W6
-- Bauen mit 2x W3 und Spielerwahl
-- Upgrade aktiver Felder
-- Aussetzen
-- Raid
-- echte Mondrunde
-- Omen vor Mondrunde
-- Überfluss-Check
-- Imperium-Sieg
-- Ausdauer-Sieg
-- Nachbar-Sieg
-- JSON Save/Load mit v0.1-Backward-Compatibility
+## Repository-Struktur
 
-Nicht enthalten sind:
+| Bereich | Inhalt |
+|---|---|
+| `src/maillon_v04/` | Spielzustand, Board, Regeln, Aktionen, Engine, Bots und Terminalclient |
+| `analysis/` | Regressionen, Simulationen, Bot-Matrizen und Balancing-Auswertungen |
+| `docs/` | Regeln, Architektur, Entwicklungsstände und Designentscheidungen |
 
-- Nachbar-Profile
-- Sabotage
-- Stagnationssystem
-- Fokus-Token
-- Hex-Alterung
-- Named Combos
-- Heilige Felder
-- Wonder
-- Backend/KI
-- GUI
+## Projektstatus
 
-## Nächster Entwicklungsschritt
+Maillon ist aktuell:
 
-Der nächste Hauptschritt ist die Vorbereitung einer neuen Terminal-Runtime auf Basis des v0.4-Prototypkerns:
+- ein funktionsfähiger Python-Regelkern
+- ein spielbarer Terminal-Prototyp
+- ein Bot- und Balancing-Labor
 
-- BoardState für Hex-Board.
-- Ressourcenstand und Caps.
-- gültige Aktionen pro Zustand.
-- Untermenüs für Build, Raid, Rebuild, Field Upgrade und Core Upgrade.
-- einfacher Gegnerbot.
-- später wieder Save/Load.
+Die zentralen Mechaniken sind implementiert und durch automatisierte Regressionen abgesichert.
+
+Der nächste Meilenstein ist die Vorbereitung eines visuellen Clients für die Portierung nach Godot 4.
+
+## Dokumentation
+
+- [Terminalclient](docs/runtime_v0_4_terminal.md)
+- [Validierter v0.7-Zwischenstand](docs/maillon_v0_7_validation_freeze.md)
+- [Bot- und Strategiekalibrierung](docs/v0_7_1_calibration_plan.md)
+- [Bot-Architektur](docs/bot_architecture_overview.md)
+- [Analysewerkzeuge und Reports](analysis/README.md)
+- [Entwicklungsverlauf](CHANGELOG.md)
+
+## Lizenz
+
+Maillon Engine steht unter der [MIT-Lizenz](LICENSE).
