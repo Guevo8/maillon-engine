@@ -15,7 +15,12 @@ from src.maillon_v04.tunnel_rules import (
     tunnel_extend_cost,
     tunnel_raid_cost,
 )
-from src.maillon_v04.tunnels import add_tunnel_edge, has_tunnel_edge, tunnel_access_nodes
+from src.maillon_v04.tunnels import (
+    actor_tunnel_corridor,
+    add_tunnel_edge,
+    has_tunnel_edge,
+    tunnel_access_nodes,
+)
 
 
 TunnelActionType = Literal[
@@ -113,15 +118,17 @@ def tunnel_extend_targets_from(
     not a second expansion layer through empty neutral land.
     """
 
-    if source not in tunnel_access_nodes(state, actor):
+    corridor = actor_tunnel_corridor(state, actor)
+
+    if source not in corridor:
         return []
 
     source_cell = state.cell(source)
 
-    if source_cell.collapsed:
+    if not state.is_active(source):
         return []
 
-    if source_cell.owner is None:
+    if source_cell.owner != actor:
         return []
 
     if source_cell.is_core:
@@ -135,7 +142,7 @@ def tunnel_extend_targets_from(
         if target_cell.collapsed:
             continue
 
-        if target_cell.owner is None:
+        if target_cell.owner != actor:
             continue
 
         if target_cell.is_core:
@@ -156,7 +163,9 @@ def tunnel_extend_targets(state: GameState, actor: ActorId) -> list[tuple[Coord,
 
     pairs: list[tuple[Coord, Coord]] = []
 
-    for source in sorted(tunnel_access_nodes(state, actor)):
+    for source in sorted(actor_tunnel_corridor(state, actor)):
+        if not state.is_active(source):
+            continue
         for target in tunnel_extend_targets_from(state, actor, source):
             pairs.append((source, target))
 

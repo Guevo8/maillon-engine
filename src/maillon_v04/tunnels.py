@@ -163,15 +163,20 @@ def actor_tunnel_entrances(state: GameState, actor: ActorId) -> list[Coord]:
     )
 
 
-def tunnel_access_nodes(state: GameState, actor: ActorId) -> set[Coord]:
+def actor_tunnel_corridor(state: GameState, actor: ActorId) -> set[Coord]:
     """
-    Return coordinates where the actor can enter or continue tunnel play.
+    Own non-collapsed cells reachable via tunnel edges from active own entrances.
 
-    This includes isolated entrances and all tunnel nodes reachable from those
-    entrances through non-collapsed tunnel edges.
+    Starting points: own, active, non-collapsed entrance fields.
+    Traversal: follows tunnel edges through own non-collapsed cells only.
+    Inactive own cells may be in the corridor but cannot be action sources.
+    Enemy and neutral cells are never included even if an edge leads to them.
     """
 
-    starts = actor_tunnel_entrances(state, actor)
+    starts = [
+        coord for coord in actor_tunnel_entrances(state, actor)
+        if state.is_active(coord) and not state.cell(coord).collapsed
+    ]
     if not starts:
         return set()
 
@@ -182,29 +187,23 @@ def tunnel_access_nodes(state: GameState, actor: ActorId) -> set[Coord]:
         coord = queue.popleft()
         if coord in reachable:
             continue
-
         if state.cell(coord).collapsed:
             continue
-
+        if state.cell(coord).owner != actor:
+            continue
         reachable.add(coord)
-
         for neighbor in tunnel_neighbors(state, coord):
-            if state.cell(neighbor).collapsed:
-                continue
-
             if neighbor not in reachable:
                 queue.append(neighbor)
 
     return reachable
 
 
+def tunnel_access_nodes(state: GameState, actor: ActorId) -> set[Coord]:
+    """Alias for actor_tunnel_corridor()."""
+    return actor_tunnel_corridor(state, actor)
+
+
 def reachable_tunnel_nodes(state: GameState, actor: ActorId) -> set[Coord]:
-    """
-    Compatibility alias for tunnel_access_nodes().
-
-    Historically this name referred only to tunnel graph nodes. In v0.6.1 it
-    also includes active owned entrance fields so a fresh network can start from
-    an entrance before any tunnel edge exists.
-    """
-
-    return tunnel_access_nodes(state, actor)
+    """Alias for actor_tunnel_corridor()."""
+    return actor_tunnel_corridor(state, actor)
