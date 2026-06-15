@@ -187,6 +187,6 @@ If a `log_path: Path` is passed to `choose_utility_tunneler_action()`, each deci
 
 Both systems prioritise **explainability before raw strength**.
 
-The normal utility scorer exposes every score component via the `reasons` tuple on `ActionScore`. The tunnel overlay exposes a named `TunnelFeatures` dataclass and a `reasons` tuple per candidate. This makes it straightforward to trace why a specific action was chosen — or why it wasn't — without running a debugger.
+The normal utility scorer exposes every score component via the `reasons` tuple on `UtilityScore`. The tunnel overlay exposes a named `TunnelFeatures` dataclass and a `reasons` tuple per candidate. This makes it straightforward to trace why a specific action was chosen — or why it wasn't — without running a debugger.
 
 Raw win-rate optimisation (weight search, minimax, lookahead) is a deliberate non-goal for the current version. The weight tables are tuned by hand, validated by the runtime matrix, and kept interpretable so design changes can be reasoned about directly.
