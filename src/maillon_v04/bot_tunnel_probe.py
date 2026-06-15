@@ -9,7 +9,7 @@ from src.maillon_v04.actions import (
     affordable_rebuild_targets,
     affordable_tunnel_entrance_targets,
     affordable_tunnel_extend_targets,
-    affordable_tunnel_raid_targets,
+    affordable_tunnel_raid_pairs,
     affordable_tunnel_repair_build_targets,
 )
 from src.maillon_v04.board import Coord
@@ -184,6 +184,27 @@ def choose_tunnel_raid_target(state: GameState, actor: ActorId, options: list[Co
     )
 
 
+def choose_tunnel_raid_pair(
+    state: GameState,
+    actor: ActorId,
+    options: list[tuple[Coord, Coord]],
+) -> tuple[Coord, Coord]:
+    target_core = opponent_core(state, actor)
+
+    return min(
+        options,
+        key=lambda pair: (
+            -state.cell(pair[1]).raid_shield,
+            -FIELD_VALUE[state.cell(pair[1]).field_type],
+            state.board.distance(pair[1], target_core),
+            pair[1][0],
+            pair[1][1],
+            pair[0][0],
+            pair[0][1],
+        ),
+    )
+
+
 def choose_tunnel_probe_action(state: GameState, actor: ActorId) -> Action:
     """
     Minimaler tunnel-aware Probe-Bot.
@@ -192,12 +213,14 @@ def choose_tunnel_probe_action(state: GameState, actor: ActorId) -> Action:
     Kein finaler Balance-Bot.
     """
 
-    tunnel_raids = affordable_tunnel_raid_targets(state, actor)
-    if tunnel_raids:
+    tunnel_raid_p = affordable_tunnel_raid_pairs(state, actor)
+    if tunnel_raid_p:
+        source, target = choose_tunnel_raid_pair(state, actor, tunnel_raid_p)
         return Action(
             actor=actor,
             action_type="tunnel_raid",
-            target=choose_tunnel_raid_target(state, actor, tunnel_raids),
+            source=source,
+            target=target,
         )
 
     repair_targets = affordable_tunnel_repair_build_targets(state, actor)

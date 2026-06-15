@@ -12,14 +12,14 @@ from src.maillon_v04.tunnel_actions import (
     TunnelAction,
     affordable_repair_build_targets,
     affordable_tunnel_extend_targets,
-    affordable_tunnel_raid_targets,
+    affordable_tunnel_raid_pairs,
     apply_tunnel_action,
     repair_build_targets,
     tunnel_entrance_targets,
     tunnel_extend_targets,
-    tunnel_raid_targets,
+    tunnel_raid_pairs,
 )
-from src.maillon_v04.tunnels import add_tunnel_edge, tunnel_access_nodes, tunnel_pressure
+from src.maillon_v04.tunnels import add_tunnel_edge, has_tunnel_edge, tunnel_access_nodes, tunnel_pressure
 
 
 ActorId = str
@@ -209,34 +209,36 @@ def test_tunnel_raid() -> None:
     actor = "player"
     enemy = "enemy"
 
-    # v0.6.2: use non-core occupied fields.
-    entrance = (-2, 0)
+    # source in corridor (own active entrance), target is adjacent enemy cell
+    source = (-2, 0)
     target = (-1, 0)
 
-    state.cell(entrance).owner = actor
-    state.cell(entrance).field_type = "Holz"
-    state.cell(entrance).level = 1
-    state.cell(entrance).active_from_round = 1
-    state.cell(entrance).has_tunnel_entrance = True
+    state.cell(source).owner = actor
+    state.cell(source).field_type = "Holz"
+    state.cell(source).level = 1
+    state.cell(source).active_from_round = 1
+    state.cell(source).has_tunnel_entrance = True
 
     state.cell(target).owner = enemy
     state.cell(target).field_type = "Stein"
     state.cell(target).level = 2
     state.cell(target).raid_shield = 3
+    state.cell(target).has_tunnel_entrance = True
     state.cell(target).active_from_round = 1
     state.cell(target).collapsed = False
 
+    state.actor_state(actor).resources["Holz"] = 1
+    state.actor_state(actor).resources["Stein"] = 1
     state.actor_state(actor).resources["Korn"] = 3
-    add_tunnel_edge(state, entrance, target)
 
-    targets = tunnel_raid_targets(state, actor)
-    affordable = affordable_tunnel_raid_targets(state, actor)
+    pairs = tunnel_raid_pairs(state, actor)
+    affordable = affordable_tunnel_raid_pairs(state, actor)
     result = apply_tunnel_action(
         state,
-        TunnelAction(actor=actor, action_type="tunnel_raid", target=target),
+        TunnelAction(actor=actor, action_type="tunnel_raid", source=source, target=target),
     )
 
-    print("targets:", targets)
+    print("pairs:", pairs)
     print("affordable:", affordable)
     print("result:", result)
     print("after:", {
@@ -247,20 +249,25 @@ def test_tunnel_raid() -> None:
         "entrance": state.cell(target).has_tunnel_entrance,
         "contested": state.cell(target).contested_count,
         "active_from": state.cell(target).active_from_round,
+        "holz": state.actor_state(actor).resources["Holz"],
+        "stein": state.actor_state(actor).resources["Stein"],
         "korn": state.actor_state(actor).resources["Korn"],
         "edges": sorted(state.tunnel_edges),
     })
 
-    assert_equal(targets, [target], "tunnel raid targets")
-    assert_equal(affordable, [target], "affordable tunnel raid targets")
+    assert_equal(pairs, [(source, target)], "tunnel raid pairs")
+    assert_equal(affordable, [(source, target)], "affordable tunnel raid pairs")
     assert_equal(result.ok, True, "tunnel_raid ok")
     assert_equal(state.cell(target).owner, actor, "target owner after tunnel_raid")
     assert_equal(state.cell(target).field_type, "Stein", "target field_type after tunnel_raid")
     assert_equal(state.cell(target).level, 2, "target level after tunnel_raid")
     assert_equal(state.cell(target).raid_shield, 0, "target shield after tunnel_raid")
-    assert_equal(state.cell(target).has_tunnel_entrance, False, "target entrance after tunnel_raid")
+    assert_equal(state.cell(target).has_tunnel_entrance, False, "target entrance cleared after tunnel_raid")
+    assert_equal(state.actor_state(actor).resources["Holz"], 0, "Holz after tunnel_raid")
+    assert_equal(state.actor_state(actor).resources["Stein"], 0, "Stein after tunnel_raid")
     assert_equal(state.actor_state(actor).resources["Korn"], 0, "Korn after tunnel_raid")
-    assert_equal(len(state.tunnel_edges), 1, "tunnel edge remains after tunnel_raid")
+    assert_equal(has_tunnel_edge(state, source, target), True, "tunnel edge created after tunnel_raid")
+    assert_equal(len(state.tunnel_edges), 1, "exactly one tunnel edge after tunnel_raid")
 
 def test_repair_build() -> None:
     print_section("5. repair_build")

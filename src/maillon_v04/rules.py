@@ -296,8 +296,12 @@ def apply_core_level_2_caps(state: GameState, actor: ActorId) -> None:
         actor_state.caps[resource] += CORE_LEVEL_2_CAP_BONUS
 
 
+def effective_board_size(state: GameState) -> int:
+    return sum(1 for cell in state.cells.values() if not cell.collapsed)
+
+
 def territory_threshold_60(state: GameState) -> int:
-    return math.ceil(state.board.size * TERRITORY_WIN_RATIO)
+    return math.ceil(effective_board_size(state) * TERRITORY_WIN_RATIO)
 
 
 def has_territory_win(state: GameState, actor: ActorId) -> bool:
@@ -344,9 +348,7 @@ def winner_by_full_board(state: GameState) -> ActorId | None:
     Bei Gleichstand gibt es keinen Gewinner.
     """
 
-    neutral_fields = sum(1 for cell in state.cells.values() if cell.owner is None)
-
-    if neutral_fields > 0:
+    if state.neutral_cells():
         return None
 
     player_count = state.controlled_count("player")

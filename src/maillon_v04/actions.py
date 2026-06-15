@@ -23,11 +23,13 @@ from src.maillon_v04.tunnel_actions import (
     affordable_repair_build_targets as affordable_tunnel_repair_build_targets,
     affordable_tunnel_entrance_targets,
     affordable_tunnel_extend_targets,
+    affordable_tunnel_raid_pairs,
     affordable_tunnel_raid_targets,
     apply_tunnel_action as apply_isolated_tunnel_action,
     repair_build_targets as tunnel_repair_build_targets,
     tunnel_entrance_targets,
     tunnel_extend_targets,
+    tunnel_raid_pairs,
     tunnel_raid_targets,
 )
 
@@ -286,6 +288,9 @@ def action_summary(state: GameState, actor: ActorId) -> dict[str, int]:
         "affordable_tunnel_entrance_targets": len(affordable_tunnel_entrance_targets(state, actor)),
         "tunnel_extend_targets": len(tunnel_extend_targets(state, actor)),
         "affordable_tunnel_extend_targets": len(affordable_tunnel_extend_targets(state, actor)),
+        # Counts unique reachable enemy target coordinates; a target reachable
+        # from several corridor sources is counted once. The canonical raid
+        # action is still an explicit (source, target) pair.
         "tunnel_raid_targets": len(tunnel_raid_targets(state, actor)),
         "affordable_tunnel_raid_targets": len(affordable_tunnel_raid_targets(state, actor)),
         "repair_build_targets": len(tunnel_repair_build_targets(state, actor)),
@@ -529,6 +534,7 @@ def apply_raid(state: GameState, action: Action) -> ActionResult:
     cell.owner = actor
     cell.raid_shield = 0
     cell.contested_count += 1
+    cell.has_tunnel_entrance = False
 
     cooldown = min(3, cell.contested_count)
     cell.active_from_round = state.round_index + cooldown

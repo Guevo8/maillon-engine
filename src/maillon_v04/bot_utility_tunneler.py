@@ -8,7 +8,7 @@ from .actions import (
     Action,
     affordable_tunnel_entrance_targets,
     affordable_tunnel_extend_targets,
-    affordable_tunnel_raid_targets,
+    affordable_tunnel_raid_pairs,
     affordable_tunnel_repair_build_targets,
 )
 from .bot_utility import choose_best_utility_action, score_candidate_actions
@@ -382,9 +382,9 @@ def generate_tunnel_candidates(state: GameState, actor: ActorId) -> list[Action]
             )
         )
 
-    for target in affordable_tunnel_raid_targets(state, actor):
+    for source, target in affordable_tunnel_raid_pairs(state, actor):
         actions.append(
-            Action(actor=actor, action_type="tunnel_raid", target=target)
+            Action(actor=actor, action_type="tunnel_raid", source=source, target=target)
         )
 
     for target in affordable_tunnel_repair_build_targets(state, actor):

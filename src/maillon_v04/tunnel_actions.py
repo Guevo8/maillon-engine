@@ -8,12 +8,19 @@ from src.maillon_v04.state import ActorId, GameState
 from src.maillon_v04.rules import can_pay, pay_resources, winner_by_territory
 from src.maillon_v04.tunnel_collapse import check_collapses
 from src.maillon_v04.tunnel_rules import (
+    owned_tunnel_entrance_count,
     repair_build_cost,
+    tunnel_entrance_capacity,
     tunnel_entrance_cost,
     tunnel_extend_cost,
     tunnel_raid_cost,
 )
-from src.maillon_v04.tunnels import add_tunnel_edge, has_tunnel_edge, tunnel_access_nodes
+from src.maillon_v04.tunnels import (
+    actor_tunnel_corridor,
+    add_tunnel_edge,
+    has_tunnel_edge,
+    tunnel_access_nodes,
+)
 
 
 TunnelActionType = Literal[
@@ -58,6 +65,9 @@ def tunnel_entrance_targets(state: GameState, actor: ActorId) -> list[Coord]:
     underground intrusion / pressure. Core fields are excluded to avoid
     early special-case rules around core access and core stability.
     """
+
+    if owned_tunnel_entrance_count(state, actor) >= tunnel_entrance_capacity(state, actor):
+        return []
 
     targets: list[Coord] = []
 
@@ -108,15 +118,17 @@ def tunnel_extend_targets_from(
     not a second expansion layer through empty neutral land.
     """
 
-    if source not in tunnel_access_nodes(state, actor):
+    corridor = actor_tunnel_corridor(state, actor)
+
+    if source not in corridor:
         return []
 
     source_cell = state.cell(source)
 
-    if source_cell.collapsed:
+    if not state.is_active(source):
         return []
 
-    if source_cell.owner is None:
+    if source_cell.owner != actor:
         return []
 
     if source_cell.is_core:
@@ -130,7 +142,7 @@ def tunnel_extend_targets_from(
         if target_cell.collapsed:
             continue
 
-        if target_cell.owner is None:
+        if target_cell.owner != actor:
             continue
 
         if target_cell.is_core:
@@ -151,7 +163,9 @@ def tunnel_extend_targets(state: GameState, actor: ActorId) -> list[tuple[Coord,
 
     pairs: list[tuple[Coord, Coord]] = []
 
-    for source in sorted(tunnel_access_nodes(state, actor)):
+    for source in sorted(actor_tunnel_corridor(state, actor)):
+        if not state.is_active(source):
+            continue
         for target in tunnel_extend_targets_from(state, actor, source):
             pairs.append((source, target))
 
@@ -169,39 +183,76 @@ def affordable_tunnel_extend_targets(state: GameState, actor: ActorId) -> list[t
 
 def tunnel_raid_targets(state: GameState, actor: ActorId) -> list[Coord]:
     """
-    Enemy non-core surface fields reachable through the actor's tunnel network.
+    Backward-compatible target view derived from the canonical raid pairs.
 
-    Tunnel raid is a precise shield-bypass action. The target must be the field
-    under the reachable tunnel node, not an adjacent field.
+    A tunnel raid is always an explicit (source, target) action. This helper
+    projects the legal pairs onto their unique target coordinates; a target
+    reachable from more than one source appears once.
     """
 
-    enemy = state.opponent(actor)
-    targets: list[Coord] = []
-
-    for coord in sorted(tunnel_access_nodes(state, actor)):
-        cell = state.cell(coord)
-
-        if cell.collapsed:
-            continue
-
-        if cell.owner != enemy:
-            continue
-
-        if cell.is_core:
-            continue
-
-        targets.append(coord)
-
-    return targets
+    return sorted({target for _, target in tunnel_raid_pairs(state, actor)})
 
 
 def affordable_tunnel_raid_targets(state: GameState, actor: ActorId) -> list[Coord]:
-    costs = tunnel_raid_cost(state, actor)
+    return sorted({target for _, target in affordable_tunnel_raid_pairs(state, actor)})
 
-    if not can_pay(state, actor, costs):
+
+def tunnel_raid_targets_from(
+    state: GameState,
+    actor: ActorId,
+    source: Coord,
+) -> list[Coord]:
+    """
+    Adjacent enemy raid targets for a single source, with full source contract.
+
+    The source must itself be a legal raid origin: in the actor's tunnel
+    corridor, owned by the actor, active, not collapsed and not a core. If any
+    of these fail the function returns [] so callers cannot raid from an
+    illegal source. Targets must be directly hex-adjacent, enemy-owned,
+    non-collapsed and non-core.
+    """
+    source_cell = state.cell(source)
+
+    if source not in actor_tunnel_corridor(state, actor):
+        return []
+    if source_cell.owner != actor:
+        return []
+    if not state.is_active(source):
+        return []
+    if source_cell.collapsed:
+        return []
+    if source_cell.is_core:
         return []
 
-    return tunnel_raid_targets(state, actor)
+    enemy = state.opponent(actor)
+    targets = []
+    for neighbor in state.board.neighbors(source):
+        cell = state.cell(neighbor)
+        if cell.owner != enemy:
+            continue
+        if cell.collapsed:
+            continue
+        if cell.is_core:
+            continue
+        targets.append(neighbor)
+    return sorted(targets)
+
+
+def tunnel_raid_pairs(state: GameState, actor: ActorId) -> list[tuple[Coord, Coord]]:
+    pairs = []
+    for source in sorted(actor_tunnel_corridor(state, actor)):
+        for target in tunnel_raid_targets_from(state, actor, source):
+            pairs.append((source, target))
+    return pairs
+
+
+def affordable_tunnel_raid_pairs(
+    state: GameState,
+    actor: ActorId,
+) -> list[tuple[Coord, Coord]]:
+    if not can_pay(state, actor, tunnel_raid_cost(state, actor)):
+        return []
+    return tunnel_raid_pairs(state, actor)
 
 
 def repair_build_targets(state: GameState, actor: ActorId) -> list[Coord]:
@@ -364,6 +415,7 @@ def apply_tunnel_extend(state: GameState, action: TunnelAction) -> TunnelActionR
 
 def apply_tunnel_raid(state: GameState, action: TunnelAction) -> TunnelActionResult:
     actor = action.actor
+    source = action.source
     target = action.target
 
     if action.action_type != "tunnel_raid":
@@ -374,11 +426,19 @@ def apply_tunnel_raid(state: GameState, action: TunnelAction) -> TunnelActionRes
             winner=winner_by_territory(state),
         )
 
-    if target is None:
+    if source is None or target is None:
         return TunnelActionResult(
             ok=False,
             action=action,
-            message="tunnel_raid requires a target.",
+            message="tunnel_raid requires source and target.",
+            winner=winner_by_territory(state),
+        )
+
+    if source not in state.cells:
+        return TunnelActionResult(
+            ok=False,
+            action=action,
+            message=f"source is not on board: {source}",
             winner=winner_by_territory(state),
         )
 
@@ -390,11 +450,11 @@ def apply_tunnel_raid(state: GameState, action: TunnelAction) -> TunnelActionRes
             winner=winner_by_territory(state),
         )
 
-    if target not in tunnel_raid_targets(state, actor):
+    if (source, target) not in tunnel_raid_pairs(state, actor):
         return TunnelActionResult(
             ok=False,
             action=action,
-            message=f"invalid tunnel_raid target: {target}",
+            message=f"invalid tunnel_raid pair: source={source}, target={target}",
             winner=winner_by_territory(state),
         )
 
@@ -415,19 +475,30 @@ def apply_tunnel_raid(state: GameState, action: TunnelAction) -> TunnelActionRes
     cell.owner = actor
     cell.raid_shield = 0
     cell.contested_count += 1
+    cell.has_tunnel_entrance = False
 
     cooldown = min(3, cell.contested_count)
     cell.active_from_round = state.round_index + cooldown
+
+    if not has_tunnel_edge(state, source, target):
+        add_tunnel_edge(state, source, target)
+
+    # A raid edge is a physical tunnel edge and changes pressure, so it must
+    # trigger the same collapse check as tunnel_extend. Winner is evaluated
+    # after collapses so a self-collapse cannot be masked by a stale board.
+    collapsed = tuple(check_collapses(state))
 
     return TunnelActionResult(
         ok=True,
         action=action,
         message=(
-            f"{actor} tunnel-raids {target} for {costs}. "
+            f"{actor} tunnel-raids {source}->{target} for {costs}. "
             f"shield bypassed from {old_shield} to 0, "
-            f"contested={cell.contested_count}, active_from_round={cell.active_from_round}."
+            f"contested={cell.contested_count}, active_from_round={cell.active_from_round}. "
+            f"collapsed={collapsed}."
         ),
         winner=winner_by_territory(state),
+        collapsed=collapsed,
     )
 
 
