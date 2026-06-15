@@ -13,7 +13,13 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.maillon_v04.actions import Action, apply_action
+from src.maillon_v04.actions import (
+    Action,
+    action_summary,
+    apply_action,
+    tunnel_raid_targets,
+)
+from src.maillon_v04.bot_utility_tunneler import generate_tunnel_candidates
 from src.maillon_v04.rules import (
     effective_board_size,
     has_territory_win,
@@ -41,6 +47,7 @@ from src.maillon_v04.tunnels import (
     actor_tunnel_corridor,
     add_tunnel_edge,
     has_tunnel_edge,
+    tunnel_pressure,
 )
 
 
@@ -78,6 +85,57 @@ def print_section(title: str) -> None:
 
 def test_group_a_victory_thresholds() -> None:
     print_section("A. Victory thresholds (collapse-aware)")
+
+    # Direct boundary table on a side=5 board (61 cells). Collapse cells one
+    # at a time and check the exact threshold at each effective board size.
+    s5 = create_initial_state(5)
+    collapsible = [c for c in s5.cells if c not in (s5.player_core, s5.enemy_core)]
+    assert_equal(effective_board_size(s5), 61, "A0: 61 active cells")
+    assert_equal(territory_threshold_60(s5), 37, "A0: 61 → threshold 37")
+    s5.cell(collapsible[0]).collapsed = True
+    assert_equal(effective_board_size(s5), 60, "A0: 60 active cells")
+    assert_equal(territory_threshold_60(s5), 36, "A0: 60 → threshold 36")
+    s5.cell(collapsible[1]).collapsed = True
+    assert_equal(effective_board_size(s5), 59, "A0: 59 active cells")
+    assert_equal(territory_threshold_60(s5), 36, "A0: 59 → threshold 36")
+    s5.cell(collapsible[2]).collapsed = True
+    assert_equal(effective_board_size(s5), 58, "A0: 58 active cells")
+    assert_equal(territory_threshold_60(s5), 35, "A0: 58 → threshold 35")
+
+    # Player controls 36/61 → below threshold 37 → no territory win.
+    s5b = create_initial_state(5)
+    non_core = [c for c in s5b.cells if c not in (s5b.player_core, s5b.enemy_core)]
+    for coord in non_core:
+        s5b.cell(coord).owner = None  # reset to neutral for a precise count
+    # player_core stays player-owned; add 35 non-core cells → exactly 36.
+    controlled = non_core[:35]
+    for coord in controlled:
+        s5b.cell(coord).owner = "player"
+    assert_equal(s5b.controlled_count("player"), 36, "A0b: player controls 36")
+    assert_equal(territory_threshold_60(s5b), 37, "A0b: 61 active → threshold 37")
+    assert_equal(has_territory_win(s5b, "player"), False, "A0b: 36 < 37 → no win")
+    # One collapse OUTSIDE the controlled set → 60 active → threshold 36 → win.
+    outside = non_core[35]
+    s5b.cell(outside).collapsed = True
+    assert_equal(effective_board_size(s5b), 60, "A0b: 60 active after collapse")
+    assert_equal(territory_threshold_60(s5b), 36, "A0b: threshold drops to 36")
+    assert_equal(has_territory_win(s5b, "player"), True, "A0b: 36 >= 36 → immediate win")
+
+    # Full-board tie → deterministically no winner. Collapse one cell so no
+    # non-collapsed neutral remains, split the rest evenly 18/18.
+    s5c = create_initial_state(4)
+    coords4 = list(s5c.cells.keys())
+    s5c.cell(coords4[0]).owner = None
+    s5c.cell(coords4[0]).collapsed = True
+    rest = coords4[1:]
+    half = len(rest) // 2  # 36 / 2 = 18
+    for coord in rest[:half]:
+        s5c.cell(coord).owner = "player"
+    for coord in rest[half:]:
+        s5c.cell(coord).owner = "enemy"
+    assert_equal(len(s5c.neutral_cells()), 0, "A0c: no non-collapsed neutral remains")
+    assert_equal(s5c.controlled_count("player"), s5c.controlled_count("enemy"), "A0c: counts tie")
+    assert_equal(winner_by_full_board(s5c), None, "A0c: full-board tie → no winner")
 
     # side=4 board has 37 cells; threshold = ceil(37 * 0.60) = 23
     state = create_initial_state(4)
@@ -206,6 +264,42 @@ def test_group_b_entrance_capacity() -> None:
     targets6 = affordable_tunnel_entrance_targets(state, actor)
     assert_true(len(targets6) > 0, "B12: slot freed after capture-away")
 
+    # An INACTIVE own entrance still occupies a slot. Core L1 therefore blocks
+    # a second entrance even though a free active field exists.
+    s2 = create_initial_state(4)
+    free_active = (-2, 0)  # own active, no entrance → would be a candidate
+    inactive_ent = (-1, 0)
+    s2.cell(inactive_ent).owner = actor
+    s2.cell(inactive_ent).field_type = "Korn"
+    s2.cell(inactive_ent).level = 1
+    s2.cell(inactive_ent).active_from_round = 999  # inactive
+    s2.cell(inactive_ent).has_tunnel_entrance = True
+    s2.actor_state(actor).resources.update({"Holz": 5, "Stein": 5, "Korn": 5})
+    assert_equal(owned_tunnel_entrance_count(s2, actor), 1, "B13: inactive entrance still counted")
+    assert_true(s2.is_active(free_active), "B13: free field is active")
+    assert_equal(
+        affordable_tunnel_entrance_targets(s2, actor),
+        [],
+        "B14: inactive entrance occupies the only core-L1 slot",
+    )
+
+    # Repair does not recreate an entrance: a repaired collapsed cell has no
+    # entrance, so the slot count does not rise from the repair itself.
+    s3 = create_initial_state(4)
+    own_origin = (-2, 0)
+    collapsed_cell = (-1, 0)
+    s3.cell(collapsed_cell).collapsed = True
+    s3.cell(collapsed_cell).has_tunnel_entrance = True  # stale flag pre-repair
+    s3.actor_state(actor).resources.update({"Holz": 5, "Stein": 5, "Korn": 5})
+    before_count = owned_tunnel_entrance_count(s3, actor)
+    apply_tunnel_action(
+        s3,
+        TunnelAction(actor=actor, action_type="repair_build", target=collapsed_cell, field_type="Korn"),
+    )
+    assert_equal(s3.cell(collapsed_cell).has_tunnel_entrance, False, "B15: repair leaves no entrance")
+    assert_equal(owned_tunnel_entrance_count(s3, actor), before_count, "B16: repair does not add a slot")
+    _ = own_origin
+
 
 # ---------------------------------------------------------------------------
 # Group C — Tunnel Extend rules
@@ -325,6 +419,63 @@ def test_group_d_corridor() -> None:
     corridor6 = actor_tunnel_corridor(state3, actor)
     assert_true(disconnected not in corridor6, "D6: own cell without entrance not in corridor")
 
+    # Own network WITH edges but no ACTIVE entrance → not accessible.
+    state7 = create_initial_state(4)
+    a = (-2, 0)
+    b = (-1, 0)
+    state7.cell(a).has_tunnel_entrance = True
+    state7.cell(a).active_from_round = 999  # entrance present but inactive
+    state7.cell(b).owner = actor
+    state7.cell(b).field_type = "Korn"
+    state7.cell(b).active_from_round = 1
+    add_tunnel_edge(state7, a, b)
+    assert_equal(actor_tunnel_corridor(state7, actor), set(), "D7: edges but no active entrance → empty corridor")
+
+    # An ENEMY tunnel entrance does not start the actor's corridor.
+    state8 = create_initial_state(4)
+    enemy_ent = (1, 0)
+    state8.cell(enemy_ent).owner = "enemy"
+    state8.cell(enemy_ent).field_type = "Korn"
+    state8.cell(enemy_ent).active_from_round = 1
+    state8.cell(enemy_ent).has_tunnel_entrance = True
+    assert_equal(actor_tunnel_corridor(state8, actor), set(), "D8: enemy entrance does not start own corridor")
+
+    # An enemy cell in a physical chain blocks traversal to the own cell behind.
+    state9 = create_initial_state(4)
+    own_ent = (-2, 0)
+    enemy_mid = (-1, 0)
+    own_behind = (0, 0)
+    state9.cell(own_ent).has_tunnel_entrance = True
+    state9.cell(enemy_mid).owner = "enemy"
+    state9.cell(enemy_mid).field_type = "Korn"
+    state9.cell(enemy_mid).active_from_round = 1
+    state9.cell(own_behind).owner = actor
+    state9.cell(own_behind).field_type = "Korn"
+    state9.cell(own_behind).active_from_round = 1
+    add_tunnel_edge(state9, own_ent, enemy_mid)
+    add_tunnel_edge(state9, enemy_mid, own_behind)
+    corridor9 = actor_tunnel_corridor(state9, actor)
+    assert_true(own_ent in corridor9, "D9: entrance in corridor")
+    assert_true(own_behind not in corridor9, "D9: enemy mid blocks traversal to own cell behind")
+
+    # An inactive own cell stays in the corridor but is NOT a valid source for
+    # either tunnel_extend or tunnel_raid.
+    state10 = create_initial_state(4)
+    ent10 = (-2, 0)
+    inactive_own10 = (-1, 0)
+    enemy_neighbor10 = (0, 0)
+    state10.cell(ent10).has_tunnel_entrance = True
+    state10.cell(inactive_own10).owner = actor
+    state10.cell(inactive_own10).field_type = "Korn"
+    state10.cell(inactive_own10).active_from_round = 999  # inactive
+    add_tunnel_edge(state10, ent10, inactive_own10)
+    state10.cell(enemy_neighbor10).owner = "enemy"
+    state10.cell(enemy_neighbor10).field_type = "Korn"
+    state10.cell(enemy_neighbor10).active_from_round = 1
+    assert_true(inactive_own10 in actor_tunnel_corridor(state10, actor), "D10: inactive own cell stays in corridor")
+    assert_equal(tunnel_extend_targets_from(state10, actor, inactive_own10), [], "D10: inactive own not an extend source")
+    assert_equal(tunnel_raid_targets_from(state10, actor, inactive_own10), [], "D11: inactive own not a raid source")
+
 
 # ---------------------------------------------------------------------------
 # Group E — Tunnel Raid semantics
@@ -433,6 +584,78 @@ def test_group_e_tunnel_raid() -> None:
         "E10: cooldown=1 (first contest)",
     )
 
+    # tunnel_raid_targets_from self-validates the source contract.
+    s, src, tgt = _base_state()
+    assert_equal(tunnel_raid_targets_from(s, actor, (-2, -1)), [], "E11: neutral source → []")
+    assert_equal(tunnel_raid_targets_from(s, actor, tgt), [], "E11: enemy source → []")
+    assert_equal(tunnel_raid_targets_from(s, actor, s.player_core), [], "E11: core source → []")
+    s_in, src_in, _ = _base_state()
+    s_in.cell(src_in).active_from_round = 999
+    assert_equal(tunnel_raid_targets_from(s_in, actor, src_in), [], "E11: inactive source → []")
+    s_oc, _, _ = _base_state()
+    out_src = (0, 0)  # own active, but not connected to any active entrance
+    s_oc.cell(out_src).owner = actor
+    s_oc.cell(out_src).field_type = "Korn"
+    s_oc.cell(out_src).active_from_round = 1
+    assert_equal(tunnel_raid_targets_from(s_oc, actor, out_src), [], "E11: source outside corridor → []")
+
+    # A valid pair appears in pairs AND its target in tunnel_raid_targets; the
+    # action summary reports a non-zero affordable raid count.
+    s_v, src_v, tgt_v = _base_state()
+    assert_true((src_v, tgt_v) in tunnel_raid_pairs(s_v, actor), "E12: valid pair present")
+    assert_true(tgt_v in tunnel_raid_targets(s_v, actor), "E12: target consistent in tunnel_raid_targets")
+    assert_true(
+        action_summary(s_v, actor)["affordable_tunnel_raid_targets"] > 0,
+        "E12: action_summary reports the raid",
+    )
+
+    # Cost contract: each of Holz/Stein/Korn is required; exactly 1/1/3 pays.
+    def _affordable_with(res):
+        s_c, _, _ = _base_state()
+        s_c.actor_state(actor).resources.update(res)
+        return len(affordable_tunnel_raid_pairs(s_c, actor)) > 0
+
+    assert_equal(_affordable_with({"Holz": 0, "Stein": 5, "Korn": 5}), False, "E13: no Holz → not affordable")
+    assert_equal(_affordable_with({"Holz": 5, "Stein": 0, "Korn": 5}), False, "E13: no Stein → not affordable")
+    assert_equal(_affordable_with({"Holz": 5, "Stein": 5, "Korn": 2}), False, "E13: <3 Korn → not affordable")
+    assert_equal(_affordable_with({"Holz": 1, "Stein": 1, "Korn": 3}), True, "E13: exactly 1/1/3 → affordable")
+
+    # Bot candidate sets source AND target explicitly.
+    s_b, src_b, tgt_b = _base_state()
+    raid_candidates = [c for c in generate_tunnel_candidates(s_b, actor) if c.action_type == "tunnel_raid"]
+    assert_true(len(raid_candidates) > 0, "E14: bot produces a raid candidate")
+    assert_true(raid_candidates[0].source is not None, "E14: candidate has source")
+    assert_true(raid_candidates[0].target is not None, "E14: candidate has target")
+
+    # Pre-existing edge: not duplicated, and full cost still deducted (no discount).
+    s_e, src_e, tgt_e = _base_state()
+    s_e.actor_state(actor).resources.update({"Holz": 1, "Stein": 1, "Korn": 3})
+    add_tunnel_edge(s_e, src_e, tgt_e)
+    apply_tunnel_action(
+        s_e,
+        TunnelAction(actor=actor, action_type="tunnel_raid", source=src_e, target=tgt_e),
+    )
+    assert_equal(len(s_e.tunnel_edges), 1, "E15: pre-existing edge not duplicated")
+    assert_equal(s_e.actor_state(actor).resources["Holz"], 0, "E15: full Holz cost despite existing edge")
+    assert_equal(s_e.actor_state(actor).resources["Stein"], 0, "E15: full Stein cost despite existing edge")
+    assert_equal(s_e.actor_state(actor).resources["Korn"], 0, "E15: full Korn cost despite existing edge")
+
+    # Collapse invariant: a raid edge raises pressure and must trigger the same
+    # collapse check as tunnel_extend. Pre-load the target with pressure 3 so
+    # the new raid edge tips it to the threshold (4).
+    s_col, src_col, tgt_col = _base_state()
+    pre_edge_neighbors = [n for n in s_col.board.neighbors(tgt_col) if n != src_col][:3]
+    for n in pre_edge_neighbors:
+        add_tunnel_edge(s_col, tgt_col, n)
+    assert_equal(tunnel_pressure(s_col, tgt_col), 3, "E16: target pre-loaded to pressure 3")
+    result_col = apply_tunnel_action(
+        s_col,
+        TunnelAction(actor=actor, action_type="tunnel_raid", source=src_col, target=tgt_col),
+    )
+    assert_true(tgt_col in result_col.collapsed, "E16: raid edge triggers collapse of target")
+    assert_equal(s_col.cell(tgt_col).collapsed, True, "E16: target collapsed")
+    assert_equal(s_col.cell(tgt_col).owner, None, "E16: collapsed target has no owner")
+
 
 # ---------------------------------------------------------------------------
 # Group F — Normal Raid side effects
@@ -505,21 +728,40 @@ def test_group_g_repair_build() -> None:
 
     state = create_initial_state(4)
     actor = "player"
-    own = (-2, 0)
+    own = (-2, 0)  # player-owned active anchor
     collapsed_adj = (-1, 0)
-    not_adj = (2, 0)
+    far_collapsed = (2, 0)  # collapsed but NOT adjacent to any active own cell
 
-    # Only adjacent collapsed cell is reparable
+    # Adjacent collapsed cell is reparable; a genuinely collapsed but distant
+    # cell is not (the earlier non-collapsed far cell was an insufficient test).
     state.cell(collapsed_adj).collapsed = True
+    state.cell(far_collapsed).owner = None
+    state.cell(far_collapsed).collapsed = True
     targets = repair_build_targets(state, actor)
     assert_true(collapsed_adj in targets, "G1: adjacent collapsed cell in targets")
-    assert_true(not_adj not in targets, "G2: non-adjacent collapsed cell not in targets")
+    assert_true(state.cell(far_collapsed).collapsed, "G2: far cell is genuinely collapsed")
+    assert_true(far_collapsed not in targets, "G2: distant collapsed cell not reparable")
 
     # Non-collapsed cell: not in targets
     not_collapsed = (-2, -1)
     assert_true(not_collapsed not in targets, "G3: non-collapsed cell not in targets")
 
-    # Repair sets correct fields
+    # A CHAIN of collapsed cells must not let a far-repair leak through it. Only
+    # the link directly adjacent to the active own anchor is reparable.
+    chain_state = create_initial_state(4)
+    anchor = (-2, 0)  # player active
+    link1 = (-1, 0)   # adjacent to anchor
+    link2 = (0, 0)    # adjacent to link1, two hops from anchor
+    chain_state.cell(link1).owner = None
+    chain_state.cell(link1).collapsed = True
+    chain_state.cell(link2).owner = None
+    chain_state.cell(link2).collapsed = True
+    chain_targets = repair_build_targets(chain_state, actor)
+    assert_true(link1 in chain_targets, "G_chain: first link (adjacent to anchor) reparable")
+    assert_true(link2 not in chain_targets, "G_chain: no far-repair through the collapsed chain")
+    _ = anchor
+
+    # Repair sets correct fields, including the chosen field type.
     state.actor_state(actor).resources.update({"Holz": 5, "Stein": 5, "Korn": 5})
     state.cell(collapsed_adj).has_tunnel_entrance = True  # should be cleared by repair
     apply_tunnel_action(
@@ -534,10 +776,12 @@ def test_group_g_repair_build() -> None:
     cell = state.cell(collapsed_adj)
     assert_equal(cell.collapsed, False, "G4: repaired cell not collapsed")
     assert_equal(cell.owner, actor, "G4: repaired cell owned by actor")
+    assert_equal(cell.field_type, "Holz", "G4: repaired cell field_type set to chosen type")
     assert_equal(cell.level, 1, "G4: repaired cell level=1")
     assert_equal(cell.raid_shield, 0, "G4: repaired cell shield=0")
     assert_equal(cell.has_tunnel_entrance, False, "G4: repaired cell entrance=False")
     assert_equal(cell.active_from_round, state.round_index + 1, "G4: repaired cell active next round")
+    _ = own
 
 
 # ---------------------------------------------------------------------------
