@@ -188,9 +188,9 @@ def test_utility_tunneler_raids_via_tunnel() -> None:
 
     state = create_initial_state(4)
     player_wood = (-2, 0)
-    # Holz=0, Stein=0 → no normal build/fortify/upgrade affordable → baseline near zero
-    # Korn=4 covers tunnel_raid cost (=3); Korn=4 also defeats surface action threshold
-    state.actor_state("player").resources.update({"Holz": 0, "Stein": 0, "Korn": 4})
+    # Holz=1, Stein=1 → insufficient for build (needs 2 Holz) or entrance (needs 2 Stein)
+    # Korn=3 covers tunnel_raid cost exactly; baseline near zero → raid wins
+    state.actor_state("player").resources.update({"Holz": 1, "Stein": 1, "Korn": 3})
     state.cell(player_wood).has_tunnel_entrance = True
     # Enemy field in cooldown: surface raids blocked (active_from_round check),
     # tunnel raids bypass cooldown — canonical use-case for utility_tunneler
@@ -203,8 +203,9 @@ def test_utility_tunneler_raids_via_tunnel() -> None:
 
     assert_equal(action.action_type, "tunnel_raid", "ut_tunnel_raid")
     assert_equal(action.target, (-1, 0), "ut_tunnel_raid_target")
+    assert_equal(action.source, (-2, 0), "ut_tunnel_raid_source")
     assert_equal(action.actor, "player", "ut_actor")
-    print(f"  action={action.action_type} target={action.target} ✓")
+    print(f"  action={action.action_type} source={action.source} target={action.target} ✓")
 
 
 def test_all_policies_dispatch_valid_action() -> None:

@@ -156,12 +156,12 @@ def test_tunnel_raid_preferred_when_valuable() -> None:
     actor = "player"
     player_wood = (-2, 0)
 
-    # Only Korn is available: no Holz/Stein means no build/entrance/extend/repair.
-    # Normal utility score collapses to near-zero (only wait is affordable),
-    # so the tunnel raid's positive score comfortably exceeds the threshold.
-    state.actor_state(actor).resources["Holz"] = 0
-    state.actor_state(actor).resources["Stein"] = 0
-    state.actor_state(actor).resources["Korn"] = 4  # enough for tunnel_raid (cost=3)
+    # Minimal resources: Holz/Stein insufficient for build or entrance/extend,
+    # Korn insufficient for normal surface raid support. Only tunnel_raid is
+    # affordable, so its positive score comfortably exceeds the threshold.
+    state.actor_state(actor).resources["Holz"] = 1
+    state.actor_state(actor).resources["Stein"] = 1
+    state.actor_state(actor).resources["Korn"] = 3  # exactly tunnel_raid cost
 
     # Player has a tunnel entrance and an edge to an enemy field.
     # The enemy field is put into cooldown (active_from_round far in future) so
@@ -200,7 +200,8 @@ def test_tunnel_raid_preferred_when_valuable() -> None:
 
     chosen = choose_utility_tunneler_action(state, actor)
     assert_equal(chosen.action_type, "tunnel_raid", "tunnel_raid_chosen")
-    print(f"  chosen: {chosen.action_type} target={chosen.target} ✓")
+    assert_true(chosen.source is not None, "tunnel_raid_has_source")
+    print(f"  chosen: {chosen.action_type} source={chosen.source} target={chosen.target} ✓")
 
 
 def test_bot_dispatch() -> None:
