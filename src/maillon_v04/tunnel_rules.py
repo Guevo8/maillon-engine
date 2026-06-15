@@ -85,9 +85,18 @@ def owned_tunnel_entrance_count(state: GameState, actor: ActorId) -> int:
 
 
 def tunnel_entrance_capacity(state: GameState, actor: ActorId) -> int:
-    """Maximum tunnel entrances allowed based on core level."""
+    """Maximum tunnel entrances allowed by the actor's live canonical core."""
     core_coord = state.player_core if actor == "player" else state.enemy_core
-    if state.cell(core_coord).level >= 2:
+    core = state.cell(core_coord)
+
+    # A valid game keeps the core as immutable actor infrastructure: it is
+    # always owned by its actor, never collapsed and always typed as Core.
+    # Return zero defensively for corrupt, legacy or synthetic invalid states
+    # instead of treating every level below 2 as a live level-1 core.
+    if core.owner != actor or core.collapsed or not core.is_core:
+        return 0
+
+    if core.level >= 2:
         return DEFAULT_TUNNEL_ENTRANCES_CORE_LEVEL_2
     return DEFAULT_TUNNEL_ENTRANCES_CORE_LEVEL_1
 
