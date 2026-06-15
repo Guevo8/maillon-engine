@@ -18,6 +18,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.maillon_v04.state import ActorId, GameState, create_initial_state
 from src.maillon_v04.tunnel_actions import (
     affordable_tunnel_entrance_targets,
+    repair_build_targets,
     tunnel_entrance_targets,
 )
 from src.maillon_v04.tunnel_rules import tunnel_entrance_capacity
@@ -102,6 +103,18 @@ def test_actor(actor: ActorId) -> None:
     not_core = prepare_state(actor)
     not_core.cell(core_coord(not_core, actor)).field_type = "Holz"
     assert_no_capacity_or_targets(not_core, actor, f"{actor} canonical coordinate is not Core")
+
+    # repair_build must not target the core even in a synthetic collapsed state.
+    # A collapsed non-core field adjacent to the same origin IS a valid target;
+    # only the core coordinate is defended.
+    print(f"\n{actor}: collapsed core is not a repair_build target")
+    print("-" * 72)
+
+    collapsed_core_state = prepare_state(actor)
+    core = core_coord(collapsed_core_state, actor)
+    collapsed_core_state.cell(core).collapsed = True
+    rb_targets = repair_build_targets(collapsed_core_state, actor)
+    assert_true(core not in rb_targets, f"{actor} collapsed core not in repair_build_targets")
 
 
 def run_regression() -> None:
