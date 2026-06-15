@@ -23,11 +23,13 @@ from src.maillon_v04.tunnel_actions import (
     affordable_repair_build_targets as affordable_tunnel_repair_build_targets,
     affordable_tunnel_entrance_targets,
     affordable_tunnel_extend_targets,
+    affordable_tunnel_raid_pairs,
     affordable_tunnel_raid_targets,
     apply_tunnel_action as apply_isolated_tunnel_action,
     repair_build_targets as tunnel_repair_build_targets,
     tunnel_entrance_targets,
     tunnel_extend_targets,
+    tunnel_raid_pairs,
     tunnel_raid_targets,
 )
 

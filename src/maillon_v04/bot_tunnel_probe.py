@@ -9,7 +9,7 @@ from src.maillon_v04.actions import (
     affordable_rebuild_targets,
     affordable_tunnel_entrance_targets,
     affordable_tunnel_extend_targets,
-    affordable_tunnel_raid_targets,
+    affordable_tunnel_raid_pairs,
     affordable_tunnel_repair_build_targets,
 )
 from src.maillon_v04.board import Coord
@@ -192,12 +192,14 @@ def choose_tunnel_probe_action(state: GameState, actor: ActorId) -> Action:
     Kein finaler Balance-Bot.
     """
 
-    tunnel_raids = affordable_tunnel_raid_targets(state, actor)
-    if tunnel_raids:
+    tunnel_raid_p = affordable_tunnel_raid_pairs(state, actor)
+    if tunnel_raid_p:
+        source, target = tunnel_raid_p[0]
         return Action(
             actor=actor,
             action_type="tunnel_raid",
-            target=choose_tunnel_raid_target(state, actor, tunnel_raids),
+            source=source,
+            target=target,
         )
 
     repair_targets = affordable_tunnel_repair_build_targets(state, actor)

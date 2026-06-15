@@ -13,7 +13,7 @@ from src.maillon_v04.actions import (
     affordable_rebuild_targets,
     affordable_tunnel_entrance_targets,
     affordable_tunnel_extend_targets,
-    affordable_tunnel_raid_targets,
+    affordable_tunnel_raid_pairs,
     affordable_tunnel_repair_build_targets,
     apply_action,
 )
@@ -237,7 +237,7 @@ def print_front_targets(state: GameState, actor: ActorId = "player") -> None:
     print(f"Core-Upgrade-Ziele:     {len(affordable_core_upgrade_targets(state, actor))}")
     print(f"Tunnel-Entrance-Ziele:  {len(affordable_tunnel_entrance_targets(state, actor))}")
     print(f"Tunnel-Extend-Ziele:    {len(affordable_tunnel_extend_targets(state, actor))}")
-    print(f"Tunnel-Raid-Ziele:      {len(affordable_tunnel_raid_targets(state, actor))}")
+    print(f"Tunnel-Raid-Ziele:      {len(affordable_tunnel_raid_pairs(state, actor))}")
     print(f"Repair-Build-Ziele:     {len(affordable_tunnel_repair_build_targets(state, actor))}")
 
 
@@ -458,26 +458,31 @@ def tunnel_extend_action_from_input(state: GameState, actor: ActorId) -> Action 
 
 
 def tunnel_raid_action_from_input(state: GameState, actor: ActorId) -> Action | None:
-    targets = affordable_tunnel_raid_targets(state, actor)
+    pairs = affordable_tunnel_raid_pairs(state, actor)
     cost = tunnel_raid_cost(state, actor)
 
     items: list[tuple[str, object]] = [
         (
-            f"{coord_label(state, coord)} | Shield-Bypass | Kosten: {cost_label(cost)}",
-            coord,
+            f"{source} → {target} | "
+            f"Quelle: {coord_label(state, source)} | "
+            f"Ziel: {coord_label(state, target)} | "
+            f"Kosten: {cost_label(cost)}",
+            (source, target),
         )
-        for coord in targets
+        for source, target in pairs
     ]
 
-    target = choose_from_numbered_list("Tunnel-Raid-Ziel wählen", items)
+    pair = choose_from_numbered_list("Tunnel-Raid-Ziel wählen", items)
 
-    if target is None:
+    if pair is None:
         return None
 
+    source, target = cast(tuple[Coord, Coord], pair)
     return Action(
         actor=actor,
         action_type="tunnel_raid",
-        target=cast(Coord, target),
+        source=source,
+        target=target,
     )
 
 
@@ -512,7 +517,7 @@ def choose_tunnel_action_from_input(state: GameState, actor: ActorId) -> Action 
     counts = {
         "tunnel_entrance": len(affordable_tunnel_entrance_targets(state, actor)),
         "tunnel_extend": len(affordable_tunnel_extend_targets(state, actor)),
-        "tunnel_raid": len(affordable_tunnel_raid_targets(state, actor)),
+        "tunnel_raid": len(affordable_tunnel_raid_pairs(state, actor)),
         "repair_build": len(affordable_tunnel_repair_build_targets(state, actor)),
     }
 
@@ -606,7 +611,7 @@ def player_available_counts(state: GameState) -> dict[str, int]:
         "core_upgrade": len(affordable_core_upgrade_targets(state, "player")),
         "tunnel_entrance": len(affordable_tunnel_entrance_targets(state, "player")),
         "tunnel_extend": len(affordable_tunnel_extend_targets(state, "player")),
-        "tunnel_raid": len(affordable_tunnel_raid_targets(state, "player")),
+        "tunnel_raid": len(affordable_tunnel_raid_pairs(state, "player")),
         "repair_build": len(affordable_tunnel_repair_build_targets(state, "player")),
     }
 
