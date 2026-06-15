@@ -4,7 +4,9 @@
 
 ```
 src/maillon_v04/
-├── bot.py                   ← policy dispatcher + inline legacy bots
+├── bot.py                   ← re-export facade (backwards compatibility only)
+├── bot_registry.py          ← BotPolicy Literal, choose_bot_action() dispatcher
+├── bot_legacy.py            ← choose_rusher_action, choose_phase_player_action + helpers
 ├── bot_personality.py       ← personality ID registry + phase-specific weight tables
 ├── bot_utility.py           ← utility scoring engine (candidate gen, scoring, selection)
 ├── bot_utility_tunneler.py  ← tunnel-action overlay (feature scoring + opportunity cost)
@@ -16,9 +18,9 @@ src/maillon_v04/
 
 ---
 
-## Policy Dispatch: `bot.py`
+## Policy Dispatch: `bot_registry.py`
 
-`bot.py` is the single entry point for all bot decisions. Every call goes through:
+`bot_registry.py` is the single entry point for all bot decisions. Every call goes through:
 
 ```python
 choose_bot_action(state: GameState, actor: ActorId, policy: BotPolicy) -> Action
@@ -38,8 +40,8 @@ choose_bot_action(state: GameState, actor: ActorId, policy: BotPolicy) -> Action
 
 | Priority | Policy | Implementation |
 |---|---|---|
-| 1 | `rusher` | `choose_rusher_action()` — defined inline in `bot.py` |
-| 2 | `phase_player` | `choose_phase_player_action()` — defined inline in `bot.py` |
+| 1 | `rusher` | `choose_rusher_action()` — defined in `bot_legacy.py` |
+| 2 | `phase_player` | `choose_phase_player_action()` — defined in `bot_legacy.py` |
 | 3 | `tunnel_probe` | `choose_tunnel_probe_action()` from `bot_tunnel_probe.py` |
 | 4 | `utility_tunneler` | `choose_utility_tunneler_action()` from `bot_utility_tunneler.py` |
 | 5 | `opening_resource_spammer` | `choose_opening_resource_spammer_action()` from `bot_exploit.py` |
@@ -52,7 +54,7 @@ choose_bot_action(state: GameState, actor: ActorId, policy: BotPolicy) -> Action
 
 ### Legacy Bots (inline in `bot.py`)
 
-`rusher` and `phase_player` were the original handcrafted bots before the utility system existed. Their decision logic — including helper functions like `choose_rusher_action`, `choose_phase_player_action`, `conservative_fortify_action`, and `rusher_finish_build_action` — lives directly in `bot.py`.
+`rusher` and `phase_player` were the original handcrafted bots before the utility system existed. Their decision logic — including helper functions like `choose_rusher_action`, `choose_phase_player_action`, `conservative_fortify_action`, and `rusher_finish_build_action` — lives in `bot_legacy.py`.
 
 Both use explicit priority trees with deterministic coordinate tie-breaking (distance to opponent core, then `(x, y)`). No weighted scoring. No personality.
 
@@ -88,36 +90,23 @@ See `docs/utility_weighting_mechanics.md` §Tunneler Overlay for details.
 
 ## Why `bot.py` Is a Compatibility Facade
 
-`bot.py` currently carries three distinct concerns:
+The three original concerns of `bot.py` — policy dispatch, legacy bot logic, and shared helpers — have been extracted into separate modules:
 
-1. **Policy dispatch** — `choose_bot_action()` and the `BotPolicy` Literal
-2. **Legacy bot logic** — `rusher` and `phase_player` implementations inline
-3. **Shared utility helpers** — e.g. `choose_closest_to_opponent_core`, `conservative_fortify_action`, which are also used internally by the legacy bots
-
-This is intentional for now: collapsing them kept the initial surface area small. The downside is that `bot.py` grows whenever a new legacy-style bot is added.
-
----
-
-## Future Refactor (No-Behavior Change)
-
-A planned future cleanup would extract the three concerns without altering any bot behavior:
-
-| New File | Would Contain |
+| File | Contains |
 |---|---|
 | `bot_registry.py` | `BotPolicy` Literal, `UTILITY_POLICY_TO_PERSONALITY`, `choose_bot_action()` dispatcher |
 | `bot_legacy.py` | `choose_rusher_action`, `choose_phase_player_action`, and all their helpers |
 | `bot.py` | Re-exports only, kept for backwards compatibility |
 
-A further step would introduce a `BaseUtilityBot` (working name `base_utility_bot.py`) that makes the personality parameter explicit at construction time, allowing personality to be injected without the string-lookup table. This would make it easier to create constrained personality variants without adding new policy strings.
-
-**None of these files exist yet.** The refactor is a no-behavior change — it is only worth doing once the personality/weight system stabilises.
+`bot.py` is now a thin re-export facade: it imports and re-exports `choose_bot_action`, `BotPolicy`, `UTILITY_POLICY_TO_PERSONALITY` from `bot_registry.py`, and the legacy helpers from `bot_legacy.py`. Callers that imported from `bot.py` continue to work.
 
 ---
 
 ## Dependency Graph (current)
 
 ```
-bot.py
+bot_registry.py  (public API — all callers go through choose_bot_action)
+├── bot_legacy.py           (choose_rusher_action, choose_phase_player_action + helpers)
 ├── bot_exploit.py          (probe bots)
 ├── bot_tunnel_probe.py     (priority-tree tunnel probe)
 ├── bot_utility_tunneler.py
@@ -125,6 +114,8 @@ bot.py
 │   └── tunnels.py / tunnel_collapse.py / tunnel_rules.py
 └── bot_utility.py
     └── bot_personality.py
+
+bot.py → re-export facade; imports from bot_registry.py + bot_legacy.py
 ```
 
 `actions.py` is imported by most bot modules for the `affordable_*_targets()` family of functions.
