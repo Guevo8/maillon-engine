@@ -288,6 +288,9 @@ def action_summary(state: GameState, actor: ActorId) -> dict[str, int]:
         "affordable_tunnel_entrance_targets": len(affordable_tunnel_entrance_targets(state, actor)),
         "tunnel_extend_targets": len(tunnel_extend_targets(state, actor)),
         "affordable_tunnel_extend_targets": len(affordable_tunnel_extend_targets(state, actor)),
+        # Counts unique reachable enemy target coordinates; a target reachable
+        # from several corridor sources is counted once. The canonical raid
+        # action is still an explicit (source, target) pair.
         "tunnel_raid_targets": len(tunnel_raid_targets(state, actor)),
         "affordable_tunnel_raid_targets": len(affordable_tunnel_raid_targets(state, actor)),
         "repair_build_targets": len(tunnel_repair_build_targets(state, actor)),

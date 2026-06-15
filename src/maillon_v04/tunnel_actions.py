@@ -183,39 +183,18 @@ def affordable_tunnel_extend_targets(state: GameState, actor: ActorId) -> list[t
 
 def tunnel_raid_targets(state: GameState, actor: ActorId) -> list[Coord]:
     """
-    Enemy non-core surface fields reachable through the actor's tunnel network.
+    Backward-compatible target view derived from the canonical raid pairs.
 
-    Tunnel raid is a precise shield-bypass action. The target must be the field
-    under the reachable tunnel node, not an adjacent field.
+    A tunnel raid is always an explicit (source, target) action. This helper
+    projects the legal pairs onto their unique target coordinates; a target
+    reachable from more than one source appears once.
     """
 
-    enemy = state.opponent(actor)
-    targets: list[Coord] = []
-
-    for coord in sorted(tunnel_access_nodes(state, actor)):
-        cell = state.cell(coord)
-
-        if cell.collapsed:
-            continue
-
-        if cell.owner != enemy:
-            continue
-
-        if cell.is_core:
-            continue
-
-        targets.append(coord)
-
-    return targets
+    return sorted({target for _, target in tunnel_raid_pairs(state, actor)})
 
 
 def affordable_tunnel_raid_targets(state: GameState, actor: ActorId) -> list[Coord]:
-    costs = tunnel_raid_cost(state, actor)
-
-    if not can_pay(state, actor, costs):
-        return []
-
-    return tunnel_raid_targets(state, actor)
+    return sorted({target for _, target in affordable_tunnel_raid_pairs(state, actor)})
 
 
 def tunnel_raid_targets_from(
@@ -223,7 +202,28 @@ def tunnel_raid_targets_from(
     actor: ActorId,
     source: Coord,
 ) -> list[Coord]:
-    """Adjacent enemy non-core non-collapsed cells hex-adjacent to source."""
+    """
+    Adjacent enemy raid targets for a single source, with full source contract.
+
+    The source must itself be a legal raid origin: in the actor's tunnel
+    corridor, owned by the actor, active, not collapsed and not a core. If any
+    of these fail the function returns [] so callers cannot raid from an
+    illegal source. Targets must be directly hex-adjacent, enemy-owned,
+    non-collapsed and non-core.
+    """
+    source_cell = state.cell(source)
+
+    if source not in actor_tunnel_corridor(state, actor):
+        return []
+    if source_cell.owner != actor:
+        return []
+    if not state.is_active(source):
+        return []
+    if source_cell.collapsed:
+        return []
+    if source_cell.is_core:
+        return []
+
     enemy = state.opponent(actor)
     targets = []
     for neighbor in state.board.neighbors(source):
@@ -240,12 +240,7 @@ def tunnel_raid_targets_from(
 
 def tunnel_raid_pairs(state: GameState, actor: ActorId) -> list[tuple[Coord, Coord]]:
     pairs = []
-    corridor = actor_tunnel_corridor(state, actor)
-    for source in sorted(corridor):
-        if not state.is_active(source):
-            continue
-        if state.cell(source).is_core:
-            continue
+    for source in sorted(actor_tunnel_corridor(state, actor)):
         for target in tunnel_raid_targets_from(state, actor, source):
             pairs.append((source, target))
     return pairs
@@ -488,15 +483,22 @@ def apply_tunnel_raid(state: GameState, action: TunnelAction) -> TunnelActionRes
     if not has_tunnel_edge(state, source, target):
         add_tunnel_edge(state, source, target)
 
+    # A raid edge is a physical tunnel edge and changes pressure, so it must
+    # trigger the same collapse check as tunnel_extend. Winner is evaluated
+    # after collapses so a self-collapse cannot be masked by a stale board.
+    collapsed = tuple(check_collapses(state))
+
     return TunnelActionResult(
         ok=True,
         action=action,
         message=(
             f"{actor} tunnel-raids {source}->{target} for {costs}. "
             f"shield bypassed from {old_shield} to 0, "
-            f"contested={cell.contested_count}, active_from_round={cell.active_from_round}."
+            f"contested={cell.contested_count}, active_from_round={cell.active_from_round}. "
+            f"collapsed={collapsed}."
         ),
         winner=winner_by_territory(state),
+        collapsed=collapsed,
     )
 
 
