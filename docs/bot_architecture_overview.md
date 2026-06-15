@@ -20,7 +20,7 @@ src/maillon_v04/
 
 ## Policy Dispatch: `bot_registry.py`
 
-`bot_registry.py` is the single entry point for all bot decisions. Every call goes through:
+`bot_registry.py` contains the canonical dispatcher implementation; `bot.py` remains the backwards-compatible import facade. Every policy call goes through:
 
 ```python
 choose_bot_action(state: GameState, actor: ActorId, policy: BotPolicy) -> Action
@@ -52,7 +52,7 @@ choose_bot_action(state: GameState, actor: ActorId, policy: BotPolicy) -> Action
 
 ## Bot Categories
 
-### Legacy Bots (inline in `bot.py`)
+### Legacy Bots (`bot_legacy.py`)
 
 `rusher` and `phase_player` were the original handcrafted bots before the utility system existed. Their decision logic — including helper functions like `choose_rusher_action`, `choose_phase_player_action`, `conservative_fortify_action`, and `rusher_finish_build_action` — lives in `bot_legacy.py`.
 
@@ -105,7 +105,7 @@ The three original concerns of `bot.py` — policy dispatch, legacy bot logic, a
 ## Dependency Graph (current)
 
 ```
-bot_registry.py  (public API — all callers go through choose_bot_action)
+bot_registry.py  (canonical dispatcher)
 ├── bot_legacy.py           (choose_rusher_action, choose_phase_player_action + helpers)
 ├── bot_exploit.py          (probe bots)
 ├── bot_tunnel_probe.py     (priority-tree tunnel probe)

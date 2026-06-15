@@ -70,7 +70,7 @@ total_score = raw_score × weight
 | `development` | `field_upgrade`, `core_upgrade` |
 | *(fallback)* | `wait` — always weight 1.0 |
 
-Phase (early / mid / late) is determined from `state.round_index` relative to board size. Boundaries: Early = rounds 1–7, Mid = 8–14, Late ≥ 15 (see `bot_personality.py:phase_for_round()`). Each of the six personalities has a distinct weight table; `balancer` is the neutral reference with weights near 1.0 across all categories.
+Phase (early / mid / late) is determined from `state.round_index` using fixed round boundaries: Early = rounds 1–7, Mid = 8–14, Late ≥ 15 (see `bot_personality.py:phase_for_round()`). Each of the six personalities has a distinct weight table; `balancer` is the neutral reference with weights near 1.0 across all categories.
 
 #### Personality IDs and character
 
