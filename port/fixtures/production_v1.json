@@ -1,0 +1,78 @@
+{
+  "base_state": {
+    "kind": "initial",
+    "side_length": 5
+  },
+  "expected": {
+    "actors": {
+      "enemy": {
+        "caps": {
+          "Holz": 6,
+          "Korn": 6,
+          "Stein": 6
+        },
+        "resources": {
+          "Holz": 3,
+          "Korn": 4,
+          "Stein": 0
+        }
+      },
+      "player": {
+        "caps": {
+          "Holz": 6,
+          "Korn": 6,
+          "Stein": 6
+        },
+        "resources": {
+          "Holz": 6,
+          "Korn": 4,
+          "Stein": 0
+        }
+      }
+    },
+    "cell_changes": [],
+    "collapsed": [],
+    "ok": true,
+    "production_waste": {
+      "enemy": {
+        "Holz": 0,
+        "Korn": 0,
+        "Stein": 0
+      },
+      "player": {
+        "Holz": 0,
+        "Korn": 0,
+        "Stein": 0
+      }
+    },
+    "round_index": 1,
+    "tunnel_edges": [],
+    "winner": null
+  },
+  "fixture_id": "production_v1",
+  "overrides": {
+    "actors": {
+      "player": {
+        "caps": {
+          "Holz": 6,
+          "Korn": 6,
+          "Stein": 6
+        },
+        "resources": {
+          "Holz": 5,
+          "Korn": 3,
+          "Stein": 0
+        }
+      }
+    }
+  },
+  "query": {
+    "action": {
+      "action_type": "wait",
+      "actor": "player"
+    },
+    "apply_production_before": true,
+    "type": "apply_action"
+  },
+  "schema_version": 1
+}

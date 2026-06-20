@@ -1,0 +1,414 @@
+{
+  "base_state": {
+    "kind": "initial",
+    "side_length": 5
+  },
+  "expected": {
+    "actions": [
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Holz",
+        "target": [
+          -4,
+          1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Stein",
+        "target": [
+          -4,
+          1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Korn",
+        "target": [
+          -4,
+          1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Holz",
+        "target": [
+          -3,
+          -1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Stein",
+        "target": [
+          -3,
+          -1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Korn",
+        "target": [
+          -3,
+          -1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Holz",
+        "target": [
+          -3,
+          1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Stein",
+        "target": [
+          -3,
+          1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Korn",
+        "target": [
+          -3,
+          1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Holz",
+        "target": [
+          -2,
+          -1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Stein",
+        "target": [
+          -2,
+          -1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Korn",
+        "target": [
+          -2,
+          -1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Holz",
+        "target": [
+          -2,
+          1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Stein",
+        "target": [
+          -2,
+          1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Korn",
+        "target": [
+          -2,
+          1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Holz",
+        "target": [
+          -1,
+          -1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Stein",
+        "target": [
+          -1,
+          -1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Korn",
+        "target": [
+          -1,
+          -1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Holz",
+        "target": [
+          -1,
+          1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Stein",
+        "target": [
+          -1,
+          1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Korn",
+        "target": [
+          -1,
+          1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Holz",
+        "target": [
+          0,
+          -1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Stein",
+        "target": [
+          0,
+          -1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Korn",
+        "target": [
+          0,
+          -1
+        ]
+      },
+      {
+        "action_type": "raid",
+        "actor": "player",
+        "target": [
+          0,
+          0
+        ]
+      },
+      {
+        "action_type": "fortify",
+        "actor": "player",
+        "target": [
+          -3,
+          0
+        ]
+      },
+      {
+        "action_type": "fortify",
+        "actor": "player",
+        "target": [
+          -2,
+          0
+        ]
+      },
+      {
+        "action_type": "fortify",
+        "actor": "player",
+        "target": [
+          -1,
+          0
+        ]
+      },
+      {
+        "action_type": "rebuild",
+        "actor": "player",
+        "field_type": "Stein",
+        "target": [
+          -3,
+          0
+        ]
+      },
+      {
+        "action_type": "rebuild",
+        "actor": "player",
+        "field_type": "Korn",
+        "target": [
+          -3,
+          0
+        ]
+      },
+      {
+        "action_type": "rebuild",
+        "actor": "player",
+        "field_type": "Holz",
+        "target": [
+          -2,
+          0
+        ]
+      },
+      {
+        "action_type": "rebuild",
+        "actor": "player",
+        "field_type": "Stein",
+        "target": [
+          -2,
+          0
+        ]
+      },
+      {
+        "action_type": "rebuild",
+        "actor": "player",
+        "field_type": "Holz",
+        "target": [
+          -1,
+          0
+        ]
+      },
+      {
+        "action_type": "rebuild",
+        "actor": "player",
+        "field_type": "Korn",
+        "target": [
+          -1,
+          0
+        ]
+      },
+      {
+        "action_type": "field_upgrade",
+        "actor": "player",
+        "target": [
+          -3,
+          0
+        ]
+      },
+      {
+        "action_type": "field_upgrade",
+        "actor": "player",
+        "target": [
+          -2,
+          0
+        ]
+      },
+      {
+        "action_type": "field_upgrade",
+        "actor": "player",
+        "target": [
+          -1,
+          0
+        ]
+      },
+      {
+        "action_type": "core_upgrade",
+        "actor": "player",
+        "target": [
+          -4,
+          0
+        ]
+      },
+      {
+        "action_type": "wait",
+        "actor": "player"
+      }
+    ]
+  },
+  "fixture_id": "surface_action_sandbox_v1",
+  "overrides": {
+    "actors": {
+      "player": {
+        "caps": {
+          "Holz": 6,
+          "Korn": 6,
+          "Stein": 6
+        },
+        "resources": {
+          "Holz": 6,
+          "Korn": 6,
+          "Stein": 6
+        }
+      }
+    },
+    "cells": [
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -2,
+          0
+        ],
+        "field_type": "Korn",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -1,
+          0
+        ],
+        "field_type": "Stein",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          0,
+          0
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "enemy",
+        "raid_shield": 0
+      }
+    ]
+  },
+  "query": {
+    "actor": "player",
+    "type": "legal_actions"
+  },
+  "schema_version": 1
+}
