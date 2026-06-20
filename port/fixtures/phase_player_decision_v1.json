@@ -1,0 +1,25 @@
+{
+  "base_state": {
+    "kind": "initial",
+    "side_length": 5
+  },
+  "expected": {
+    "action": {
+      "action_type": "build",
+      "actor": "enemy",
+      "field_type": "Holz",
+      "target": [
+        2,
+        0
+      ]
+    }
+  },
+  "fixture_id": "phase_player_decision_v1",
+  "overrides": {},
+  "query": {
+    "actor": "enemy",
+    "policy": "phase_player",
+    "type": "bot_decision"
+  },
+  "schema_version": 1
+}

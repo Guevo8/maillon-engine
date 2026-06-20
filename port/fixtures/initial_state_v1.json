@@ -1,0 +1,182 @@
+{
+  "base_state": {
+    "kind": "initial",
+    "side_length": 5
+  },
+  "expected": {
+    "actions": [
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Holz",
+        "target": [
+          -4,
+          1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Stein",
+        "target": [
+          -4,
+          1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Korn",
+        "target": [
+          -4,
+          1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Holz",
+        "target": [
+          -3,
+          -1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Stein",
+        "target": [
+          -3,
+          -1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Korn",
+        "target": [
+          -3,
+          -1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Holz",
+        "target": [
+          -3,
+          1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Stein",
+        "target": [
+          -3,
+          1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Korn",
+        "target": [
+          -3,
+          1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Holz",
+        "target": [
+          -2,
+          -1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Stein",
+        "target": [
+          -2,
+          -1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Korn",
+        "target": [
+          -2,
+          -1
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Holz",
+        "target": [
+          -2,
+          0
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Stein",
+        "target": [
+          -2,
+          0
+        ]
+      },
+      {
+        "action_type": "build",
+        "actor": "player",
+        "field_type": "Korn",
+        "target": [
+          -2,
+          0
+        ]
+      },
+      {
+        "action_type": "fortify",
+        "actor": "player",
+        "target": [
+          -3,
+          0
+        ]
+      },
+      {
+        "action_type": "rebuild",
+        "actor": "player",
+        "field_type": "Stein",
+        "target": [
+          -3,
+          0
+        ]
+      },
+      {
+        "action_type": "rebuild",
+        "actor": "player",
+        "field_type": "Korn",
+        "target": [
+          -3,
+          0
+        ]
+      },
+      {
+        "action_type": "wait",
+        "actor": "player"
+      }
+    ]
+  },
+  "fixture_id": "initial_state_v1",
+  "overrides": {},
+  "query": {
+    "actor": "player",
+    "type": "surface_legal_actions"
+  },
+  "schema_version": 1
+}

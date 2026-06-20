@@ -1,0 +1,19 @@
+{
+  "base_state": {
+    "kind": "initial",
+    "side_length": 5
+  },
+  "expected": {
+    "first": "enemy",
+    "second": "player"
+  },
+  "fixture_id": "phase_order_even_v1",
+  "overrides": {
+    "round_index": 2
+  },
+  "query": {
+    "round_index": 2,
+    "type": "phase_order"
+  },
+  "schema_version": 1
+}

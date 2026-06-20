@@ -1,0 +1,115 @@
+{
+  "base_state": {
+    "kind": "initial",
+    "side_length": 5
+  },
+  "expected": {
+    "actors": {
+      "enemy": {
+        "caps": {
+          "Holz": 6,
+          "Korn": 6,
+          "Stein": 6
+        },
+        "resources": {
+          "Holz": 2,
+          "Korn": 3,
+          "Stein": 0
+        }
+      },
+      "player": {
+        "caps": {
+          "Holz": 6,
+          "Korn": 6,
+          "Stein": 6
+        },
+        "resources": {
+          "Holz": 4,
+          "Korn": 3,
+          "Stein": 0
+        }
+      }
+    },
+    "cell_changes": [
+      {
+        "active_from_round": 2,
+        "collapsed": false,
+        "contested_count": 1,
+        "coord": [
+          0,
+          0
+        ],
+        "field_type": "Stein",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "enemy",
+        "raid_shield": 1
+      }
+    ],
+    "collapsed": [],
+    "ok": true,
+    "round_index": 1,
+    "tunnel_edges": [],
+    "winner": null
+  },
+  "fixture_id": "raid_vs_shield_v1",
+  "overrides": {
+    "actors": {
+      "player": {
+        "caps": {
+          "Holz": 6,
+          "Korn": 6,
+          "Stein": 6
+        },
+        "resources": {
+          "Holz": 4,
+          "Korn": 6,
+          "Stein": 0
+        }
+      }
+    },
+    "cells": [
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -1,
+          0
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          0,
+          0
+        ],
+        "field_type": "Stein",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "enemy",
+        "raid_shield": 2
+      }
+    ]
+  },
+  "query": {
+    "action": {
+      "action_type": "raid",
+      "actor": "player",
+      "target": [
+        0,
+        0
+      ]
+    },
+    "apply_production_before": false,
+    "type": "apply_action"
+  },
+  "schema_version": 1
+}

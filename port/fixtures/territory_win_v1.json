@@ -1,0 +1,564 @@
+{
+  "base_state": {
+    "kind": "initial",
+    "side_length": 5
+  },
+  "expected": {
+    "actors": {
+      "enemy": {
+        "caps": {
+          "Holz": 6,
+          "Korn": 6,
+          "Stein": 6
+        },
+        "resources": {
+          "Holz": 2,
+          "Korn": 3,
+          "Stein": 0
+        }
+      },
+      "player": {
+        "caps": {
+          "Holz": 12,
+          "Korn": 12,
+          "Stein": 12
+        },
+        "resources": {
+          "Holz": 0,
+          "Korn": 3,
+          "Stein": 0
+        }
+      }
+    },
+    "cell_changes": [
+      {
+        "active_from_round": 2,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          1,
+          -3
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      }
+    ],
+    "collapsed": [],
+    "ok": true,
+    "round_index": 1,
+    "tunnel_edges": [],
+    "winner": "player"
+  },
+  "fixture_id": "territory_win_v1",
+  "overrides": {
+    "actors": {
+      "player": {
+        "caps": {
+          "Holz": 12,
+          "Korn": 12,
+          "Stein": 12
+        },
+        "resources": {
+          "Holz": 12,
+          "Korn": 3,
+          "Stein": 0
+        }
+      }
+    },
+    "cells": [
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -4,
+          1
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -4,
+          2
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -4,
+          3
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -4,
+          4
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -3,
+          -1
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -3,
+          1
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -3,
+          2
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -3,
+          3
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -3,
+          4
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -2,
+          -2
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -2,
+          -1
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -2,
+          0
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -2,
+          1
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -2,
+          2
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -2,
+          3
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -2,
+          4
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -1,
+          -3
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -1,
+          -2
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -1,
+          -1
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -1,
+          0
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -1,
+          1
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -1,
+          2
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -1,
+          3
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          -1,
+          4
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          0,
+          -4
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          0,
+          -3
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          0,
+          -2
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          0,
+          -1
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          0,
+          0
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          0,
+          1
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          0,
+          2
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          0,
+          3
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          0,
+          4
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      },
+      {
+        "active_from_round": 1,
+        "collapsed": false,
+        "contested_count": 0,
+        "coord": [
+          1,
+          -4
+        ],
+        "field_type": "Holz",
+        "has_tunnel_entrance": false,
+        "level": 1,
+        "owner": "player",
+        "raid_shield": 0
+      }
+    ]
+  },
+  "query": {
+    "action": {
+      "action_type": "build",
+      "actor": "player",
+      "field_type": "Holz",
+      "target": [
+        1,
+        -3
+      ]
+    },
+    "apply_production_before": false,
+    "type": "apply_action"
+  },
+  "schema_version": 1
+}
