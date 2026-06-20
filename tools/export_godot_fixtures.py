@@ -534,8 +534,23 @@ def build_fixtures(out_dir: Path) -> None:
         exist_ok=True,
     )
 
-    for old in out_dir.glob("*.json"):
-        old.unlink()
+    generated_fixture_filenames = (
+        "initial_state_v1.json",
+        "surface_action_sandbox_v1.json",
+        "apply_build_v1.json",
+        "raid_vs_shield_v1.json",
+        "production_v1.json",
+        "territory_win_v1.json",
+        "domination_win_v1.json",
+        "phase_order_odd_v1.json",
+        "phase_order_even_v1.json",
+        "phase_player_decision_v1.json",
+    )
+
+    for filename in generated_fixture_filenames:
+        old = out_dir / filename
+        if old.exists():
+            old.unlink()
 
     # 1. Initialzustand
     initial = create_initial_state(5)
@@ -796,12 +811,28 @@ def build_fixtures(out_dir: Path) -> None:
         },
     )
 
-    files = sorted(
-        out_dir.glob("*.json")
+    generated_files = tuple(
+        out_dir / filename
+        for filename in generated_fixture_filenames
     )
 
+    missing_files = [
+        path
+        for path in generated_files
+        if not path.is_file()
+    ]
+
+    if missing_files:
+        raise RuntimeError(
+            "fixture export incomplete: "
+            + ", ".join(
+                path.name
+                for path in missing_files
+            )
+        )
+
     print(
-        f"\nExported {len(files)} fixtures "
+        f"\nExported {len(generated_files)} fixtures "
         f"to {out_dir}"
     )
 
