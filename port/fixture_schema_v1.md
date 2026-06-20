@@ -87,12 +87,12 @@ Mögliche Felder:
 
 Schema v1 kennt vier Query-Typen.
 
-### legal_actions
+### surface_legal_actions
 
 Query:
 
     {
-      "type": "legal_actions",
+      "type": "surface_legal_actions",
       "actor": "player"
     }
 
@@ -102,7 +102,9 @@ Erwartetes Ergebnis:
       "actions": []
     }
 
-Die Aktionsliste ist vollständig und kanonisch sortiert.
+Die Aktionsliste enthält ausschließlich die legalen Oberflächenaktionen und ist innerhalb dieses Scopes vollständig und kanonisch sortiert.
+
+Tunnelaktionen gehören nicht zum Fixture-Scope v1 und werden in einer späteren Port-Stufe ergänzt.
 
 ### apply_action
 

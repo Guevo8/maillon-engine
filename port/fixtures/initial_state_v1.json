@@ -176,7 +176,7 @@
   "overrides": {},
   "query": {
     "actor": "player",
-    "type": "legal_actions"
+    "type": "surface_legal_actions"
   },
   "schema_version": 1
 }

@@ -370,7 +370,7 @@ def write_fixture(
     print(f"wrote {path}")
 
 
-def export_legal_actions(
+def export_surface_legal_actions(
     out_dir: Path,
     fixture_id: str,
     state: GameState,
@@ -386,7 +386,7 @@ def export_legal_actions(
         fixture_id,
         state,
         {
-            "type": "legal_actions",
+            "type": "surface_legal_actions",
             "actor": actor,
         },
         {
@@ -555,7 +555,7 @@ def build_fixtures(out_dir: Path) -> None:
     # 1. Initialzustand
     initial = create_initial_state(5)
 
-    export_legal_actions(
+    export_surface_legal_actions(
         out_dir,
         "initial_state_v1",
         initial,
@@ -608,7 +608,7 @@ def build_fixtures(out_dir: Path) -> None:
             f"{sorted(action_types)}"
         )
 
-    export_legal_actions(
+    export_surface_legal_actions(
         out_dir,
         "surface_action_sandbox_v1",
         sandbox,
