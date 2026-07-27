@@ -4,8 +4,9 @@ __pycache__/
 .venv/
 venv/
 
-# Runtime data
+# Legacy v0.2 runtime saves
 data/savegame.json
+legacy/v0_2/data/savegame.json
 
 # Editor / OS
 .vscode/
