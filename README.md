@@ -1,5 +1,7 @@
 # Maillon Engine
 
+![Regression](https://github.com/Guevo8/maillon-engine/actions/workflows/regression.yml/badge.svg)
+
 > Rundenbasiertes Hex-Strategiespiel mit Ressourcenmanagement, Gebietskontrolle und Tunnelsystem.
 
 Maillon begann als Python-Terminalspiel und entwickelte sich über mehrere Regel-, Bot- und Validierungsphasen zu einem spielbaren Strategieprototyp.
@@ -88,6 +90,10 @@ python -m analysis.utility_tunneler_smoke
 | `src/maillon_v04/` | Spielzustand, Board, Regeln, Aktionen, Engine, Bots und Terminalclient |
 | `analysis/` | Regressionen, Simulationen, Bot-Matrizen und Balancing-Auswertungen |
 | `docs/` | Regeln, Architektur, Entwicklungsstände und Designentscheidungen |
+| `tools/` | Hilfswerkzeuge, aktuell insbesondere deterministischer Fixture-Export für den Godot-Port |
+| `port/` | Godot-Port-Fixtures und Fixture-Schema als Referenzdaten |
+| `legacy/` | Historische Prototypen, nicht aktueller Einstiegspunkt |
+| `.github/workflows/` | Automatisierte Regressionen über GitHub Actions |
 
 ## Projektstatus
 

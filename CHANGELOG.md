@@ -5,8 +5,8 @@
 Maillon v0.4 konkretisiert die v0.3-Board-Hypothese durch deterministische Analyse-Simulationen.
 
 > Status: analysierter Prototypkern — noch nicht die spielbare Runtime.
-> Regelkern dokumentiert in `docs/maillon_v0_4_rules.md`.
-> Analysebefunde dokumentiert in `docs/analysis_findings_v0_4.md`.
+> Regelkern dokumentiert in `docs/archive/maillon_v0_4_rules.md`.
+> Analysebefunde dokumentiert in `docs/archive/analysis_findings_v0_4.md`.
 
 ### Added
 
@@ -14,10 +14,10 @@ Maillon v0.4 konkretisiert die v0.3-Board-Hypothese durch deterministische Analy
 - Hauptsimulation: `analysis/takeover_analysis.py`
 - v0.4-Hauptreport: `analysis/reports/takeover_report_3actions_v0_4.json`
 - Hotspot-Report: `analysis/reports/hotspots_61_cap_aware_vs_rusher_v0_4.csv`
-- v0.4-Regeldokumentation: `docs/maillon_v0_4_rules.md`
-- v0.4-Analysebefunde: `docs/analysis_findings_v0_4.md`
-- v0.4-Designnotizen: `docs/design_notes_v0_4.md`
-- kompakter Entwicklungslog: `docs/dev_log_short.md`
+- v0.4-Regeldokumentation: `docs/archive/maillon_v0_4_rules.md`
+- v0.4-Analysebefunde: `docs/archive/analysis_findings_v0_4.md`
+- v0.4-Designnotizen: `docs/archive/design_notes_v0_4.md`
+- kompakter Entwicklungslog: `docs/archive/dev_log_short.md`
 
 ### Analyzed
 
@@ -80,7 +80,7 @@ Maillon Pocket v0.3 ersetzt die 8-Feld-Liste durch ein räumliches Hex-Board.
 Analyse-Skript: Hex-Board erzeugen, Nachbarschaften berechnen,
 Startpositionen setzen, Bauoptionen und Rush-Distanzen ermitteln.
 
-Siehe `docs/transition_v0_2_to_v0_3_scope.md` für vollständige Analyse.
+Siehe `docs/archive/transition_v0_2_to_v0_3_scope.md` für vollständige Analyse.
 
 ---
 
@@ -89,7 +89,7 @@ Siehe `docs/transition_v0_2_to_v0_3_scope.md` für vollständige Analyse.
 Maillon Pocket v0.2 erweitert den spielbaren v0.1-Kern um den ersten echten Gegenspieler.
 
 > Status: Conflict Prototype — technisch lauffähig, nicht mehr das Zielregelwerk.
-> Übergang dokumentiert in `docs/transition_v0_2_to_v0_3_scope.md`.
+> Übergang dokumentiert in `docs/archive/transition_v0_2_to_v0_3_scope.md`.
 
 ### Added
 
@@ -103,7 +103,7 @@ Maillon Pocket v0.2 erweitert den spielbaren v0.1-Kern um den ersten echten Gege
 - Feldübernahme bei deutlichem Konfliktsieg
 - Bauen mit 2x W3 und Spielerwahl
 - v0.2-Save-Struktur mit Spieler und Nachbar
-- Regeldatei `docs/rules_v0_2.md`
+- Regeldatei `docs/archive/rules_v0_2.md`
 
 ### Changed
 
