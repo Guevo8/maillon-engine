@@ -1,0 +1,37 @@
+name: Regression
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    env:
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Zentrale Regelregression
+        run: python -m analysis.pre_godot_rule_regression
+
+      - name: Main-Action Regression Smoke
+        run: python -m analysis.main_action_regression_smoke
+
+      - name: Tunnel-Action Smoke-Suite
+        run: python -m analysis.tunnel_action_smoke_suite
+
+      - name: Utility-Tunneler Smoke
+        run: python -m analysis.utility_tunneler_smoke
+
+      - name: Bot-Verhaltens-Charakterisierung
+        run: python -m analysis.bot_behavior_characterization
